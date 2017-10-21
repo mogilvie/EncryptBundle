@@ -33,7 +33,8 @@ This bundle is under the MIT license. See the complete license in the bundle:
 
 ## About
 
-TokenBundle has been written for the [SpecShaper](http://about.specshaper.com) and [Parolla](http://parolla.ie) websites to keep track of user issues and debugging.
+EncryptBundle has been written for the [SpecShaper](http://about.specshaper.com) and [Parolla](http://parolla.ie) websites
+to encode users private data. The bundle will be expanded as part of a larger EU GDPR data management bundle.
 
 ## Reporting an issue or a feature request
 
@@ -49,7 +50,7 @@ and following some steps.
 ## Step 1: Download the bundle
 
 Open a command console, enter your project directory and execute the
-following command to download the latest stable version of this bundle:
+following command to download the latest version of this bundle:
 
 ```
 $ composer require specshaper/encrypt-bundle dev-master
