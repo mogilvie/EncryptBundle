@@ -1,13 +1,11 @@
 <?php
 
-namespace DoctrineEncrypt\Encryptors;
-use FOS\UserBundle\FOSUserBundle;
-use Symfony\Component\Security\Core\Tests\Encoder\PasswordEncoder;
+namespace SpecShaper\EncryptBundle\Encryptors;
 
 /**
  * Class for OpenSSL encryption
  *
- * @author Victor Melnik <melnikvictorl@gmail.com>
+ * @author Mark Ogilvie <mark.ogilvie@ogilvieconsulting.net>
  */
 class OpenSslEncryptor implements EncryptorInterface
 {
@@ -49,13 +47,16 @@ class OpenSslEncryptor implements EncryptorInterface
 
         $ciphertext = openssl_encrypt(
             $data,
+
             self::METHOD,
             $key,
             OPENSSL_RAW_DATA,
             $iv
         );
 
-        return $iv . $ciphertext;
+        $encoded = base64_encode($iv . $ciphertext);
+
+        return $encoded;
     }
 
     /**
@@ -68,6 +69,8 @@ class OpenSslEncryptor implements EncryptorInterface
         if (is_null($data)) {
             return $data;
         }
+
+        $data = base64_decode($data);
 
         $key = $this->secretKey;
 

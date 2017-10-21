@@ -1,12 +1,12 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: mark
+ * User: Mark Ogilvie
  * Date: 21/10/17
  * Time: 18:22
  */
 
-namespace SpecShaper\EncryptBundle;
+namespace SpecShaper\EncryptBundle\Annotations;
 
 use Doctrine\Common\Annotations\Annotation;
 

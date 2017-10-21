@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
  */
-class SpecShaperEncoderExtension extends Extension
+class SpecShaperEncryptExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -22,13 +22,8 @@ class SpecShaperEncoderExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        // $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        // loader->load('services.xml');
-
-        //$alias = $this->getAlias();
-
-        // Set parameters in the container
-        //$container->setParameter($alias . '.image_name_prefix', $config['image_name_prefix']);
+         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+         $loader->load('services.xml');
 
     }
 }

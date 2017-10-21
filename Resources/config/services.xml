@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    
+    <services>
+        <service id="spec_shaper_encrypt.subscriber"
+                 class="SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber">
+            <argument type="service" id="Doctrine\Common\Annotations\Reader" />
+            <argument type="service" id="spec_shaper_encrypt.open_ssl_encryptor" />
+            <tag name="doctrine.event_subscriber" connection="default" />
+        </service>
+        <service id="spec_shaper_encrypt.open_ssl_encryptor"
+                 class="SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor">
+            <argument>%encrypt_key%%</argument>
+        </service>
+    </services>
+</container>
+

@@ -1,6 +1,6 @@
 <?php
 
-namespace DoctrineEncrypt\Subscribers;
+namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
@@ -9,7 +9,8 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
-use DoctrineEncrypt\Encryptors\EncryptorInterface;
+use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
+use SpecShaper\EncryptBundle\Annotations\Encrypted;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
@@ -19,12 +20,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     /**
      * Encryptor interface namespace
      */
-    const ENCRYPTOR_INTERFACE_NS = 'DoctrineEncrypt\Encryptors\EncryptorInterface';
+    const ENCRYPTOR_INTERFACE_NS = EncryptorInterface::class;
 
     /**
      * Encrypted annotation full name
      */
-    const ENCRYPTED_ANN_NAME = 'DoctrineEncrypt\Configuration\Encrypted';
+    const ENCRYPTED_ANN_NAME = Encrypted::class;
 
     /**
      * Encryptor
@@ -213,9 +214,28 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         foreach ($properties as $refProperty) {
             $value = $refProperty->getValue($entity);
 
-            $value = $isEncryptOperation ?
-                $this->encryptor->encrypt($value) :
-                $this->encryptor->decrypt($value);
+            // Skip any empty values.
+            if($value === null){
+                continue;
+            }
+
+            // Set isEncrypted to false by default.
+            $isEncrypted = false;
+
+            // If the value has the suffix <ENC> then it is encrypted.
+            if(substr($value, -5) == "<ENC>") {
+                $isEncrypted = true;
+            }
+
+            // If the value is encrypted, and the operation to to decrypt then remote the suffix and decrypt it.
+            if($isEncrypted && !$isEncryptOperation) {
+                $value = $this->encryptor->decrypt(substr($value, 0, -5));
+            }
+
+            // If the required opteration is to encrypt then encrypt the value.
+            if($isEncryptOperation) {
+                $value = $this->encryptor->encrypt($value) . "<ENC>" ;
+            }
 
             $refProperty->setValue($entity, $value);
 
@@ -246,7 +266,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     {
         $this->decodedRegistry[spl_object_hash($entity)] = true;
     }
-
 
     /**
      * @param $entity

@@ -1,6 +1,6 @@
 <?php
 
-namespace SpecShaper\Encryptors;
+namespace SpecShaper\EncryptBundle\Encryptors;
 
 /**
  * Encryptor interface for encryptors

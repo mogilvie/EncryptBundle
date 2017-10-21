@@ -18,21 +18,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('spec_shaper_encoder');
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
-        $rootNode
-            ->children()
-            ->scalarNode('image_name_prefix')
-            ->info('The image name')
-            ->isRequired()
-            ->end()
-            ->end()
-            ;
-
-
+        $treeBuilder->root('spec_shaper_encrypt');
         return $treeBuilder;
     }
 }
