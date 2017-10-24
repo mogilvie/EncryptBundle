@@ -21,12 +21,6 @@ Features road map:
 - [ ] Create CLI commands
 - [ ] Handle DateTime data types via the bundle.
 
-
-## Documentation
-
-The source of the documentation is stored in the `Resources/doc/` folder
-in this bundle.
-
 ## License
 
 This bundle is under the MIT license. See the complete license in the bundle:
