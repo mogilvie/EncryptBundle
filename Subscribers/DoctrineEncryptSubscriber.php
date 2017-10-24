@@ -305,7 +305,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     protected function getEncryptedFields($entity, EntityManager $em)
     {
 
-        dump('cat');
         $className = get_class($entity);
 
         if (isset($this->encryptedFieldCache[$className])) {

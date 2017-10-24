@@ -88,9 +88,15 @@ class AppKernel extends Kernel
 
 ## Step 2: Configure the bundle
 
-Geneate a 256 bit 32 character key and add it to your parameters file.
+Generate a 256 bit key using the command provided in the bundle.
 
 ```
+$ bin/console encrypt:genkey
+```
+ 
+Copy the key into your parameters file.
+
+```yaml
 // app/config/parameters.yml
 
     ...
@@ -111,14 +117,9 @@ can be configured to extend the bundle.
             - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
             - 'AppBundle\Annotations\CustomAnnotation'
 ```   
-Subscriber_class allows you to extend the EncryptBundle subscriber and define your
-own subscriber.
 
-Annotation_classes allows you to create your own annotations that will then be
-encrypted.
 ## Step 3: Create the entities
 Add the Annotation entity to the declared classes in the entity.
-
 
 ```php
 <?php

@@ -12,7 +12,7 @@ class OpenSslEncryptor implements EncryptorInterface
     const METHOD = 'aes-256-cbc';
 
     /**
-     * Secret key for aes algorythm
+     * base64 key as stored in the parameters.yml file.
      * @var string
      */
     private $secretKey;
@@ -33,18 +33,18 @@ class OpenSslEncryptor implements EncryptorInterface
      */
     public function encrypt($data)
     {
+        // If not data return data (null)
         if (is_null($data)) {
             return $data;
         }
 
-        $key = $this->secretKey;
+        $key = $this->getSecretKey();
 
-        if (mb_strlen($key, '8bit') !== 32) {
-            throw new \Exception("Needs a 256-bit key!");
-        }
+        // Create a cipher of the appropriate length for this method.
         $ivsize = openssl_cipher_iv_length(self::METHOD);
         $iv = openssl_random_pseudo_bytes($ivsize);
 
+        // Create the ecnryption.
         $ciphertext = openssl_encrypt(
             $data,
             self::METHOD,
@@ -53,6 +53,7 @@ class OpenSslEncryptor implements EncryptorInterface
             $iv
         );
 
+        // Prefix the encoded tex with the iv and encode it to base 64.
         $encoded = base64_encode($iv . $ciphertext);
 
         return $encoded;
@@ -66,17 +67,15 @@ class OpenSslEncryptor implements EncryptorInterface
     public function decrypt($data)
     {
 
+        // If not data return data (null)
         if (is_null($data)) {
             return $data;
         }
 
+        $key = $this->getSecretKey();
+
         $data = base64_decode($data);
 
-        $key = $this->secretKey;
-
-        if (mb_strlen($key, '8bit') !== 32) {
-            throw new \Exception("Needs a 256-bit key!");
-        }
         $ivsize = openssl_cipher_iv_length(self::METHOD);
         $iv = mb_substr($data, 0, $ivsize, '8bit');
         $ciphertext = mb_substr($data, $ivsize, null, '8bit');
@@ -88,5 +87,28 @@ class OpenSslEncryptor implements EncryptorInterface
             OPENSSL_RAW_DATA,
             $iv
         );
+    }
+
+    /**
+     * Get the secret key.
+     *
+     * Decode the parameters file base64 key.
+     * Check that the key is 256 bit.
+     *
+     * @return string
+     * @throws \Exception
+     */
+    private function getSecretKey(){
+
+        // Decode the key
+        $key = base64_decode($this->secretKey);
+
+        $keyLengthOctet = mb_strlen($key, '8bit');
+
+        if ($keyLengthOctet !== 32) {
+            throw new \Exception("Needs a 256-bit key, '".($keyLengthOctet * 8)."'bit given!");
+        }
+
+        return $key;
     }
 }
