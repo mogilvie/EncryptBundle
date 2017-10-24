@@ -151,8 +151,8 @@ with the DateType formtype.
 <?php
 
     /**
-     * A users date of birth
-     
+     * A users date of birth    
+     * 
      * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
