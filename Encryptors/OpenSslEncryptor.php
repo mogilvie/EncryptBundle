@@ -47,7 +47,6 @@ class OpenSslEncryptor implements EncryptorInterface
 
         $ciphertext = openssl_encrypt(
             $data,
-
             self::METHOD,
             $key,
             OPENSSL_RAW_DATA,
@@ -66,6 +65,7 @@ class OpenSslEncryptor implements EncryptorInterface
      */
     public function decrypt($data)
     {
+
         if (is_null($data)) {
             return $data;
         }

@@ -11,11 +11,14 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
+use SpecShaper\EncryptBundle\Event\EncryptEvent;
+use SpecShaper\EncryptBundle\Event\EncryptEvents;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
  */
-class DoctrineEncryptSubscriber implements EventSubscriber
+class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubscriberInterface
 {
     /**
      * Encryptor interface namespace
@@ -23,21 +26,23 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     const ENCRYPTOR_INTERFACE_NS = EncryptorInterface::class;
 
     /**
-     * Encrypted annotation full name
+     * An array of annotations which are to be encrypted.
+     * The default and initial is the bundle Encrypted Class.
+     * @var array
      */
-    const ENCRYPTED_ANN_NAME = Encrypted::class;
+    protected $annotationArray;
 
     /**
      * Encryptor
      * @var EncryptorInterface
      */
-    private $encryptor;
+    protected $encryptor;
 
     /**
      * Annotation reader
      * @var \Doctrine\Common\Annotations\Reader
      */
-    private $annReader;
+    protected $annReader;
 
     /**
      * Registr to avoid multi decode operations for one entity
@@ -51,7 +56,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      *
      * @var array
      */
-    private $encryptedFieldCache = array();
+    protected $encryptedFieldCache = array();
 
     /**
      * Before flushing the objects out to the database, we modify their password value to the
@@ -62,14 +67,18 @@ class DoctrineEncryptSubscriber implements EventSubscriber
     private $postFlushDecryptQueue = array();
 
     /**
-     * Initialization of subscriber
-     * @param Reader $annReader
-     * @param EncryptorInterface $encryptor
+     * DoctrineEncryptSubscriber constructor.
+     *
+     * @param \Doctrine\Common\Annotations\Reader                     $annReader
+     * @param \SpecShaper\EncryptBundle\Encryptors\EncryptorInterface $encryptor
+     * @param array                                                   $annotationArray
      */
-    public function __construct(Reader $annReader, EncryptorInterface $encryptor)
+    public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray)
     {
         $this->annReader = $annReader;
         $this->encryptor = $encryptor;
+        $this->annotationArray = $annotationArray;
+
     }
 
     /**
@@ -160,6 +169,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     public function postLoad(LifecycleEventArgs $args)
     {
+
         $entity = $args->getEntity();
         $em = $args->getEntityManager();
 
@@ -176,10 +186,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     public function getSubscribedEvents()
     {
+
         return array(
             Events::postLoad,
             Events::onFlush,
             Events::postFlush,
+            EncryptEvents::ENCRYPT,
+            EncryptEvents::DECRYPT,
         );
     }
 
@@ -197,6 +210,22 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         return str_replace(' ', '', ucwords(str_replace(array('-', '_'), ' ', $word)));
     }
 
+    public function encrypt(EncryptEvent $event){
+        $encrypted = $this->encryptor->encrypt($event->getValue());
+
+        $event->setValue($encrypted);
+
+        return $encrypted;
+    }
+
+    public function decrypt(EncryptEvent $event){
+        $decrypted = $this->encryptor->decrypt($event->getValue());
+
+        $event->setValue($decrypted);
+
+        return $decrypted;
+    }
+
     /**
      * Process (encrypt/decrypt) entities fields
      * @param object $entity Some doctrine entity
@@ -206,6 +235,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      */
     private function processFields($entity, EntityManager $em, $isEncryptOperation = true)
     {
+
         $properties = $this->getEncryptedFields($entity, $em);
 
         $unitOfWork = $em->getUnitOfWork();
@@ -272,8 +302,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber
      * @param EntityManager $em
      * @return \ReflectionProperty[]
      */
-    private function getEncryptedFields($entity, EntityManager $em)
+    protected function getEncryptedFields($entity, EntityManager $em)
     {
+
+        dump('cat');
         $className = get_class($entity);
 
         if (isset($this->encryptedFieldCache[$className])) {
@@ -286,10 +318,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber
         foreach ($meta->getReflectionProperties() as $refProperty) {
             /** @var \ReflectionProperty $refProperty */
 
-            if ($this->annReader->getPropertyAnnotation($refProperty, self::ENCRYPTED_ANN_NAME)) {
-                $refProperty->setAccessible(true);
-                $encryptedFields[] = $refProperty;
+            foreach($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation){
+
+                if (in_array(get_class($annotation), $this->annotationArray)) {
+                    $refProperty->setAccessible(true);
+                    $encryptedFields[] = $refProperty;
+                }
             }
+
         }
 
         $this->encryptedFieldCache[$className] = $encryptedFields;

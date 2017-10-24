@@ -2,6 +2,7 @@
 
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
+use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -18,7 +19,23 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('spec_shaper_encrypt');
+        $rootNode = $treeBuilder->root('spec_shaper_encrypt');
+
+            $rootNode
+                ->children()
+                    ->scalarNode('method')->defaultValue('OpenSSL')->end()
+                    ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                    ->arrayNode('annotation_classes')
+                        ->treatNullLike(array())
+                        ->prototype('scalar')->end()
+                        ->defaultValue(array(
+                            'SpecShaper\EncryptBundle\Annotations\Encrypted'
+                        ))
+                    ->end()
+                ->end()
+            ;
+
+
         return $treeBuilder;
     }
 }

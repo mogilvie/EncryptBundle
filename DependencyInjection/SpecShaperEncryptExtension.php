@@ -22,8 +22,12 @@ class SpecShaperEncryptExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-         $loader->load('services.xml');
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.yml');
+
+        $container->setParameter($this->getAlias() . '.method', $config['method']);
+        $container->setParameter($this->getAlias() . '.subscriber_class', $config['subscriber_class']);
+        $container->setParameter($this->getAlias() . '.annotation_classes', $config['annotation_classes']);
 
     }
 }

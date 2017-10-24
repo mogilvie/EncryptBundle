@@ -6,7 +6,7 @@ Features include:
 
 - Written for Symfony verison 3.x.x
 - Uses OpenSSL
-- Uses Lifecycle event
+- Uses Lifecycle events
 
 **Warning**
 - This bundle has not been unit tested.
@@ -15,6 +15,8 @@ compatibility tested.
 
 Features road map:
 
+- [x] Create a factory method to expand for different encryptors
+- [x] Create a twig function to decrypt encoded values
 - [ ] Expand parameters to allow selection of encoding method
 - [ ] Create CLI commands
 - [ ] Handle DateTime data types via the bundle.
@@ -96,16 +98,38 @@ Geneate a 256 bit 32 character key and add it to your parameters file.
     
 ```
 
+A config file entry is not required, however there are some options that
+can be configured to extend the bundle.
+
+```yaml
+// app/config/config.yml
+
+    ...
+    spec_shaper_encrypt:
+        subscriber_class: 'AppBundle\Subscribers\OtherSubscriber'
+        annotation_classes:
+            - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
+            - 'AppBundle\Annotations\CustomAnnotation'
+```   
+Subscriber_class allows you to extend the EncryptBundle subscriber and define your
+own subscriber.
+
+Annotation_classes allows you to create your own annotations that will then be
+encrypted.
 ## Step 3: Create the entities
 Add the Annotation entity to the declared classes in the entity.
 
 
-```
+```php
+<?php
+...
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 ```
 
 Add the annotation '@Encrypted' to the parameters that you want encrypted.
-```
+```php
+<?php
+
     /**
      *
      * A PPS number is always 7 numbers followed by either one or two letters.
@@ -122,7 +146,9 @@ to convert that string.
 You may also need to create a DataTransformer if you are using the parameter in a form
 with the DateType formtype.
 
-```
+```php
+<?php
+
     /**
      * A users date of birth
      
@@ -131,4 +157,32 @@ with the DateType formtype.
      */
     protected $dateOfBirth;
    
+```
+## Step 4: Decrypt in templates
+
+If you query a repository using a select method, or get an array result 
+then the doctrine onLoad event subscriber will not decyrpt any encrypted
+values.
+
+In this case, use the twig filter to decrypt your value when rendering.
+
+```
+{{ employee.bankAccountNumber | decrypt }}
+```
+
+## Step 5: Call the Encryptor service directly
+
+You can of course inject the encryptor service any time into classes
+either by using autowiring or defining the injection in your service definitions.
+
+```
+/**
+ * @var SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
+ */
+private $encryptor;
+
+public function __construct(EncryptorInterface $encryptor)
+{
+    $this->encryptor = $encryptor;
+}
 ```
