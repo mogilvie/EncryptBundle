@@ -66,19 +66,47 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     private $postFlushDecryptQueue = array();
 
+    private $isDisabled;
+
     /**
-     * DoctrineEncryptSubscriber constructor.
-     *
      * @param \Doctrine\Common\Annotations\Reader                     $annReader
      * @param \SpecShaper\EncryptBundle\Encryptors\EncryptorInterface $encryptor
-     * @param array                                                   $annotationArray
+     * @param                                                         $annotationArray
+     * @param                                                         $isDisabled
      */
-    public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray)
+    public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray, $isDisabled)
     {
         $this->annReader = $annReader;
         $this->encryptor = $encryptor;
         $this->annotationArray = $annotationArray;
+        $this->isDisabled = $isDisabled;
 
+    }
+
+    /**
+     * Return the encryptor.
+     *
+     * @return \SpecShaper\EncryptBundle\Encryptors\EncryptorInterface
+     */
+    public function getEncryptor()
+    {
+        return $this->encryptor;
+    }
+
+    /**
+     * Set Is Disabled
+     *
+     * Used to programmatically disable encryption on flush operations.
+     * Decryption still occurs if values have the <ENC> suffix.
+     *
+     * @param bool $isDisabled
+     *
+     * @return $this
+     */
+    public function setIsDisabled($isDisabled = true){
+        $this->isDisabled = $isDisabled;
+
+        return $this;
     }
 
     /**
@@ -91,6 +119,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function onFlush(OnFlushEventArgs $args)
     {
+        if($this->isDisabled){
+            return;
+        }
+
         $em = $args->getEntityManager();
         $unitOfWork = $em->getUnitOfWork();
 
@@ -114,8 +146,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * @param object $entity
      * @param EntityManager $em
      */
-    private function entityOnFlush($entity, EntityManager $em)
+    protected function entityOnFlush($entity, EntityManager $em)
     {
+        if($this->isDisabled){
+            return;
+        }
+
         $objId = spl_object_hash($entity);
 
         $fields = array();
@@ -141,6 +177,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function postFlush(PostFlushEventArgs $args)
     {
+        if($this->isDisabled){
+            return;
+        }
+
         $unitOfWork = $args->getEntityManager()->getUnitOfWork();
 
         foreach ($this->postFlushDecryptQueue as $pair) {
@@ -169,7 +209,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function postLoad(LifecycleEventArgs $args)
     {
-
         $entity = $args->getEntity();
         $em = $args->getEntityManager();
 
@@ -186,7 +225,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function getSubscribedEvents()
     {
-
         return array(
             Events::postLoad,
             Events::onFlush,
@@ -210,6 +248,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         return str_replace(' ', '', ucwords(str_replace(array('-', '_'), ' ', $word)));
     }
 
+    /**
+     * Use an Encrypt even to encrypt a value.
+     *
+     * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
+     *
+     * @return string
+     */
     public function encrypt(EncryptEvent $event){
         $encrypted = $this->encryptor->encrypt($event->getValue());
 
@@ -218,6 +263,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         return $encrypted;
     }
 
+    /**
+     * Use a decrypt event to decrypt a single value.
+     *
+     * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
+     *
+     * @return string
+     */
     public function decrypt(EncryptEvent $event){
         $decrypted = $this->encryptor->decrypt($event->getValue());
 
@@ -227,13 +279,60 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     }
 
     /**
+     * Decrypt a value.
+     *
+     * If the value is an object, or if it does not contain the suffic <ENC> then return the value iteslf back.
+     * Otherwise, decrypt the value and return.
+     *
+     * @param $value
+     *
+     * @return string
+     */
+    public function decryptValue($value){
+        // If the value is an object, or does not have the suffix <ENC> then ignore.
+        if(is_object($value) || substr($value, -5) != "<ENC>") {
+            return $value;
+        }
+
+        // Else decrypt value and return.
+        return $this->encryptor->decrypt(substr($value, 0, -5));
+
+    }
+
+    /**
+     * @param $allProperties
+     * @return array
+     */
+    public function getEncryptionableProperties($allProperties)
+    {
+        $encryptedFields = [];
+
+        foreach ($allProperties as $refProperty) {
+            /** @var \ReflectionProperty $refProperty */
+
+            foreach($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation){
+
+                if (in_array(get_class($annotation), $this->annotationArray)) {
+                    $refProperty->setAccessible(true);
+                    $encryptedFields[] = $refProperty;
+                }
+            }
+
+        }
+
+        return $encryptedFields;
+    }
+
+    /**
      * Process (encrypt/decrypt) entities fields
-     * @param object $entity Some doctrine entity
-     * @param EntityManager $em
-     * @param bool $isEncryptOperation If true - encrypt, false - decrypt entity
+     *
+     * @param                             $entity
+     * @param \Doctrine\ORM\EntityManager $em
+     * @param bool                        $isEncryptOperation
+     *
      * @return bool
      */
-    private function processFields($entity, EntityManager $em, $isEncryptOperation = true)
+    protected function processFields($entity, EntityManager $em, $isEncryptOperation = true)
     {
 
         $properties = $this->getEncryptedFields($entity, $em);
@@ -249,22 +348,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 continue;
             }
 
-            // Set isEncrypted to false by default.
-            $isEncrypted = false;
-
-            // If the value has the suffix <ENC> then it is encrypted.
-            if(substr($value, -5) == "<ENC>") {
-                $isEncrypted = true;
-            }
-
-            // If the value is encrypted, and the operation to to decrypt then remote the suffix and decrypt it.
-            if($isEncrypted && !$isEncryptOperation) {
-                $value = $this->encryptor->decrypt(substr($value, 0, -5));
-            }
-
             // If the required opteration is to encrypt then encrypt the value.
             if($isEncryptOperation) {
                 $value = $this->encryptor->encrypt($value) . "<ENC>" ;
+            } else {
+                $value = $this->decryptValue($value);
             }
 
             $refProperty->setValue($entity, $value);
@@ -278,12 +366,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         return !empty($properties);
     }
 
+
+
     /**
      * Check if we have entity in decoded registry
      * @param object $entity Some doctrine entity
      * @return boolean
      */
-    private function hasInDecodedRegistry($entity)
+    protected function hasInDecodedRegistry($entity)
     {
         return isset($this->decodedRegistry[spl_object_hash($entity)]);
     }
@@ -292,7 +382,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * Adds entity to decoded registry
      * @param object $entity Some doctrine entity
      */
-    private function addToDecodedRegistry($entity)
+    protected function addToDecodedRegistry($entity)
     {
         $this->decodedRegistry[spl_object_hash($entity)] = true;
     }
@@ -331,4 +421,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         return $encryptedFields;
     }
+
+
 }

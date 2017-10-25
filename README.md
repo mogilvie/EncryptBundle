@@ -18,7 +18,7 @@ Features road map:
 - [x] Create a factory method to expand for different encryptors
 - [x] Create a twig function to decrypt encoded values
 - [ ] Expand parameters to allow selection of encoding method
-- [ ] Create CLI commands
+- [ ] Create CLI commands to encrypt and decrypt the entire database
 - [ ] Handle DateTime data types via the bundle.
 
 ## License
@@ -106,11 +106,20 @@ can be configured to extend the bundle.
 
     ...
     spec_shaper_encrypt:
+        is_disabled: false
         subscriber_class: 'AppBundle\Subscribers\OtherSubscriber'
         annotation_classes:
             - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
             - 'AppBundle\Annotations\CustomAnnotation'
 ```   
+You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
+contain the \<ENC> suffix.
+
+You can extend the EnryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
+to point the bundle at your custom subscriber.
+
+If you want to define your own annotation, then this can be used to trigger encryption by adding the annotation 
+class name to the 'annotation_classes' option array.
 
 ## Step 3: Create the entities
 Add the Annotation entity to the declared classes in the entity.

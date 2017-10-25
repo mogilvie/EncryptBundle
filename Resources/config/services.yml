@@ -15,6 +15,7 @@ services:
         class: '%spec_shaper_encrypt.subscriber_class%'
         arguments:
             $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
+            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
@@ -36,3 +37,9 @@ services:
     # Encrypt Twig extension that defins the decrypt filter.
     SpecShaper\EncryptBundle\Twig\EncryptExtension:
         tags: ['twig.extension']
+
+    SpecShaper\EncryptBundle\Command\DecryptCommand:
+        calls:
+            - method: setSubscriber
+              arguments:
+                  - '@SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface'

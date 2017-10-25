@@ -28,6 +28,7 @@ class SpecShaperEncryptExtension extends Extension
         $container->setParameter($this->getAlias() . '.method', $config['method']);
         $container->setParameter($this->getAlias() . '.subscriber_class', $config['subscriber_class']);
         $container->setParameter($this->getAlias() . '.annotation_classes', $config['annotation_classes']);
+        $container->setParameter($this->getAlias() . '.is_disabled', $config['is_disabled']);
 
     }
 }

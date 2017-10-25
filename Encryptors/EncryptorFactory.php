@@ -11,6 +11,10 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 
 class EncryptorFactory
 {
+    const SUPPORTED_EXTENSIONS = [
+        OpenSslEncryptor::class
+    ];
+
     /**
      * @param $method
      * @param $encryptKey

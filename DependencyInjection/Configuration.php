@@ -3,6 +3,7 @@
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
+use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -25,11 +26,12 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('method')->defaultValue('OpenSSL')->end()
                     ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                    ->scalarNode('is_disabled')->defaultValue(false)->end()
                     ->arrayNode('annotation_classes')
                         ->treatNullLike(array())
                         ->prototype('scalar')->end()
                         ->defaultValue(array(
-                            'SpecShaper\EncryptBundle\Annotations\Encrypted'
+                            Encrypted::class
                         ))
                     ->end()
                 ->end()

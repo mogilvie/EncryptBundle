@@ -21,7 +21,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 interface DoctrineEncryptSubscriberInterface
 {
 
-    public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray);
+    public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray, $isDisabled);
 
     /**
      * Encrypt the password before it is written to the database.

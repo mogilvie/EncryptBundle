@@ -26,6 +26,11 @@ class OpenSslEncryptor implements EncryptorInterface
         $this->secretKey = $key;
     }
 
+    public function __toString()
+    {
+        return self::class .':'.self::METHOD;
+    }
+
     /**
      * @param string $data
      * @return string
