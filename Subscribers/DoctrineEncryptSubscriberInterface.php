@@ -20,6 +20,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 interface DoctrineEncryptSubscriberInterface
 {
+    const ENCRYPTED_SUFFIX = "<ENC>";
 
     public function __construct(Reader $annReader, EncryptorInterface $encryptor, $annotationArray, $isDisabled);
 

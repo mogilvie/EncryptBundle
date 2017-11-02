@@ -2,6 +2,8 @@
 
 namespace SpecShaper\EncryptBundle\Encryptors;
 
+use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface;
+
 /**
  * Class for OpenSSL encryption
  *
@@ -72,8 +74,8 @@ class OpenSslEncryptor implements EncryptorInterface
     public function decrypt($data)
     {
 
-        // If not data return data (null)
-        if (is_null($data)) {
+        // If the value is an object, or does not have the suffix <ENC> then ignore.
+        if(is_null($data ) || is_object($data) || substr($data, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
             return $data;
         }
 

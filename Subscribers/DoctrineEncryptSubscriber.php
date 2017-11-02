@@ -271,7 +271,15 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * @return string
      */
     public function decrypt(EncryptEvent $event){
-        $decrypted = $this->encryptor->decrypt($event->getValue());
+
+        $value = $event->value();
+
+        // If the value is an object, or does not have the suffix <ENC> then ignore.
+        if($value === null || is_object($value) || substr($value, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
+            return $value;
+        }
+
+        $decrypted = $this->encryptor->decrypt($value);
 
         $event->setValue($decrypted);
 
@@ -289,8 +297,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * @return string
      */
     public function decryptValue($value){
+
         // If the value is an object, or does not have the suffix <ENC> then ignore.
-        if(is_object($value) || substr($value, -5) != "<ENC>") {
+        if($value === null || is_object($value) || substr($value, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
             return $value;
         }
 
@@ -350,7 +359,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
             // If the required opteration is to encrypt then encrypt the value.
             if($isEncryptOperation) {
-                $value = $this->encryptor->encrypt($value) . "<ENC>" ;
+                $value = $this->encryptor->encrypt($value) . DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX ;
             } else {
                 $value = $this->decryptValue($value);
             }
