@@ -22,6 +22,7 @@ class EncryptorFactory
      */
     public function createService($method, $encryptKey)
     {
+
         switch($method){
             default:
                 $encryptor = new OpenSslEncryptor($encryptKey);

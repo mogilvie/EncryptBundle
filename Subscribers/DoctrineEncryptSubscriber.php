@@ -13,6 +13,7 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Event\EncryptEvent;
 use SpecShaper\EncryptBundle\Event\EncryptEvents;
+use SpecShaper\EncryptBundle\Exception\EncryptException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -256,6 +257,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * @return string
      */
     public function encrypt(EncryptEvent $event){
+
         $encrypted = $this->encryptor->encrypt($event->getValue());
 
         $event->setValue($encrypted);
@@ -273,11 +275,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     public function decrypt(EncryptEvent $event){
 
         $value = $event->value();
-
-        // If the value is an object, or does not have the suffix <ENC> then ignore.
-        if($value === null || is_object($value) || substr($value, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
-            return $value;
-        }
 
         $decrypted = $this->encryptor->decrypt($value);
 
@@ -298,13 +295,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function decryptValue($value){
 
-        // If the value is an object, or does not have the suffix <ENC> then ignore.
-        if($value === null || is_object($value) || substr($value, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
-            return $value;
-        }
-
         // Else decrypt value and return.
-        return $this->encryptor->decrypt(substr($value, 0, -5));
+        $decrypted = $this->encryptor->decrypt($value);
+
+        return $decrypted;
 
     }
 
@@ -357,9 +351,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 continue;
             }
 
+            if (is_object($value)) {
+                throw new EncryptException('You cannot encrypt an object at ' . $refProperty->class .':'.  $refProperty->getName() , $value);
+            }
+
             // If the required opteration is to encrypt then encrypt the value.
             if($isEncryptOperation) {
-                $value = $this->encryptor->encrypt($value) . DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX ;
+                $encrypted = $this->encryptor->encrypt($value);
+                $value =  $encrypted . DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX ;
             } else {
                 $value = $this->decryptValue($value);
             }
@@ -413,6 +412,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $meta = $em->getClassMetadata($className);
 
         $encryptedFields = array();
+
         foreach ($meta->getReflectionProperties() as $refProperty) {
             /** @var \ReflectionProperty $refProperty */
 

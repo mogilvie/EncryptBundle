@@ -135,33 +135,71 @@ Add the annotation '@Encrypted' to the parameters that you want encrypted.
 <?php
 
     /**
-     *
      * A PPS number is always 7 numbers followed by either one or two letters.
-     *
+     * 
+     * @var string
      * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
     protected $taxNumber;
-   
-```
-
-For DateTime parameters store the date as a string, and use the getters and setters
-to convert that string.
-You may also need to create a DataTransformer if you are using the parameter in a form
-with the DateType formtype.
-
-```php
-<?php
-
+    
     /**
-     * A users date of birth    
+     * True if the user is self employed.
+     * 
+     * @var string | boolean
      * 
      * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $dateOfBirth;
+    protected $isSelfEmployed;
+    
+    /**
+     * Date of birth
+     * 
+     * @var string | \DateTimeInterface
+     * 
+     * @Encrypted
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $dob;
    
 ```
+Where encrypting a field you will need to set the column type as string.  
+
+Your getters and setters may also need to be type delcared.  
+
+For example, boolean should either be return declared bool, or return a bool using a ternary method.  
+
+```php
+<?php
+    /**
+     * Get isSelfEmployed
+     *
+     * @return boolean
+     */
+    public function isSelfEmployed(): bool
+    {
+        return $this->isSelfEmployed;
+    }
+
+    /**
+     * Get isSelfEmployed
+     *
+     * @return boolean
+     */
+    public function isSelfEmployed()
+    {
+        return ($this->isSelfEmployed == 1 ? true: false);
+    }
+
+```
+
+For DateTime parameters store the date as a string, and use the getters and setters
+to convert that string.
+
+You may also need to create a DataTransformer if you are using the parameter in a form
+with the DateType formtype.
+
 ## Step 4: Decrypt in templates
 
 If you query a repository using a select method, or get an array result 

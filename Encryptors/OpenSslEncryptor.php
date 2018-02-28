@@ -2,6 +2,7 @@
 
 namespace SpecShaper\EncryptBundle\Encryptors;
 
+use SpecShaper\EncryptBundle\Exception\EncryptException;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface;
 
 /**
@@ -41,8 +42,12 @@ class OpenSslEncryptor implements EncryptorInterface
     public function encrypt($data)
     {
         // If not data return data (null)
-        if (is_null($data)) {
+        if (is_null($data) || is_object($data)) {
             return $data;
+        }
+
+        if (is_object($data)) {
+            throw new EncryptException('You cannot encrypt an object.',  $data);
         }
 
         $key = $this->getSecretKey();
@@ -60,7 +65,7 @@ class OpenSslEncryptor implements EncryptorInterface
             $iv
         );
 
-        // Prefix the encoded tex with the iv and encode it to base 64.
+        // Prefix the encoded text with the iv and encode it to base 64.
         $encoded = base64_encode($iv . $ciphertext);
 
         return $encoded;
@@ -74,10 +79,17 @@ class OpenSslEncryptor implements EncryptorInterface
     public function decrypt($data)
     {
 
-        // If the value is an object, or does not have the suffix <ENC> then ignore.
-        if(is_null($data ) || is_object($data) || substr($data, -5) != DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
+        // If the value is an object or null then ignore
+        if($data === null || is_object($data)) {
             return $data;
         }
+
+        // If the value does not have the suffix <ENC> then ignore.
+        if(substr($data, -5) !== DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
+            return $data;
+        }
+
+        $data = substr($data, 0,-5);
 
         $key = $this->getSecretKey();
 
