@@ -236,8 +236,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         }
     }
 
-
-
     /**
      * Capitalize string
      * @param string $word
@@ -265,7 +263,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $event->setValue($encrypted);
 
-        return $encrypted;
+        return $event;
     }
 
     /**
@@ -283,7 +281,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $event->setValue($decrypted);
 
-        return $decrypted;
+        return $event;
     }
 
     /**
