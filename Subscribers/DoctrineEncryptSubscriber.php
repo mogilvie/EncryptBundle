@@ -11,10 +11,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Events;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
-use SpecShaper\EncryptBundle\Event\EncryptEvent;
-use SpecShaper\EncryptBundle\Event\EncryptEvents;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities
@@ -118,11 +115,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     public function getSubscribedEvents()
     {
         return array(
-            Events::postLoad => 'postLoad',
-            Events::onFlush => 'onFlush',
-            Events::postFlush => 'postFlush',
-            EncryptEvents::ENCRYPT => 'encrypt',
-            EncryptEvents::DECRYPT => 'decrypt',
+            Events::postLoad,
+            Events::onFlush,
+            Events::postFlush,
         );
     }
 
@@ -234,58 +229,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 $this->addToDecodedRegistry($entity);
             }
         }
-    }
-
-    /**
-     * Capitalize string
-     * @param string $word
-     * @return string
-     */
-    public static function capitalize($word)
-    {
-        if (is_array($word)) {
-            $word = $word[0];
-        }
-
-        return str_replace(' ', '', ucwords(str_replace(array('-', '_'), ' ', $word)));
-    }
-
-    /**
-     * Use an Encrypt even to encrypt a value.
-     *
-     * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
-     *
-     * @return EncryptEvent
-     */
-    public function encrypt(EncryptEvent $event){
-
-        $value = $event->getValue();
-
-        $encrypted = $this->encryptor->encrypt($value);
-
-        $event->setValue($encrypted);
-
-        return $event;
-    }
-
-    /**
-     * Use a decrypt event to decrypt a single value.
-     *
-     * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
-     *
-     * @return EncryptEvent
-     */
-    public function decrypt(EncryptEvent $event){
-
-        $value = $event->getValue();
-
-        $decrypted = $this->decryptValue($value);
-
-        dump($decrypted);
-
-        $event->setValue($decrypted);
-
-        return $event;
     }
 
     /**

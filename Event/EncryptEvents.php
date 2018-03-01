@@ -31,6 +31,6 @@ namespace SpecShaper\EncryptBundle\Event;
  */
 final class EncryptEvents
 {
-    const ENCRYPT = 'encrypt';
-    const DECRYPT = 'decrypt';
+    const ENCRYPT = 'sseb.encrypt';
+    const DECRYPT = 'sseb.decrypt';
 }

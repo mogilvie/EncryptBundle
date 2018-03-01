@@ -19,6 +19,12 @@ services:
         tags:
             - { name: doctrine.event_subscriber, connection: default }
 
+    SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber:
+        arguments:
+            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory: ~
 
