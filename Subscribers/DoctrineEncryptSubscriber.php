@@ -255,11 +255,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      *
      * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
      *
-     * @return string
+     * @return EncryptEvent
      */
     public function encrypt(EncryptEvent $event){
 
-        $encrypted = $this->encryptor->encrypt($event->getValue());
+        $value = $event->getValue();
+
+        $encrypted = $this->encryptor->encrypt($value);
 
         $event->setValue($encrypted);
 
@@ -271,13 +273,15 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      *
      * @param \SpecShaper\EncryptBundle\Event\EncryptEvent $event
      *
-     * @return string
+     * @return EncryptEvent
      */
     public function decrypt(EncryptEvent $event){
 
         $value = $event->getValue();
 
         $decrypted = $this->decryptValue($value);
+
+        dump($decrypted);
 
         $event->setValue($decrypted);
 
