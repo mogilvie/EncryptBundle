@@ -275,7 +275,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function decrypt(EncryptEvent $event){
 
-        $value = $event->value();
+        $value = $event->getValue();
 
         $decrypted = $this->decryptValue($value);
 
