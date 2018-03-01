@@ -219,21 +219,30 @@ the data.
 You can of course inject the EncryptorInterface service any time into classes
 either by using autowiring or defining the injection in your service definitions.
 
-```
-/**
- * @var SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
- */
-private $encryptor;
-
-public function __construct(EncryptorInterface $encryptor)
-{
-    $this->encryptor = $encryptor;
-}
-
-public function indexAction(EncryptorInterface $encryptor)
-{
+```php
+<?php
+    /**
+     * @var SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
+     */
+    private $encryptor;
     
-}
+    public function __construct(EncryptorInterface $encryptor)
+    {
+        $this->encryptor = $encryptor;
+    }
+    
+    
+    public function editAction(EncryptorInterface $encryptor)
+    {
+        ...
+        // An example encrypted value, you would get this from your database query.
+        $encryptedValue = "3DDOXwqZAEEDPJDK8/LI4wDsftqaNCN2kkyt8+QWr8E=<ENC>";
+        
+        $decrypted = $encryptor->decrypt($encryptedValue);
+        ...
+    }
+
+
 ```
 
 Or you can dispatch the EncryptEvent.

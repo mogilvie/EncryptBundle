@@ -84,6 +84,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
     }
 
+
     /**
      * Return the encryptor.
      *
@@ -108,6 +109,21 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $this->isDisabled = $isDisabled;
 
         return $this;
+    }
+
+    /**
+     * Realization of EventSubscriber interface method.
+     * @return array Return all events which this subscriber is listening
+     */
+    public function getSubscribedEvents()
+    {
+        return array(
+            Events::postLoad => 'postLoad',
+            Events::onFlush => 'onFlush',
+            Events::postFlush => 'postFlush',
+            EncryptEvents::ENCRYPT => 'encrypt',
+            EncryptEvents::DECRYPT => 'decrypt',
+        );
     }
 
     /**
@@ -220,20 +236,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         }
     }
 
-    /**
-     * Realization of EventSubscriber interface method.
-     * @return array Return all events which this subscriber is listening
-     */
-    public function getSubscribedEvents()
-    {
-        return array(
-            Events::postLoad,
-            Events::onFlush,
-            Events::postFlush,
-            EncryptEvents::ENCRYPT,
-            EncryptEvents::DECRYPT,
-        );
-    }
+
 
     /**
      * Capitalize string
@@ -276,7 +279,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $value = $event->value();
 
-        $decrypted = $this->encryptor->decrypt($value);
+        $decrypted = $this->decryptValue($value);
 
         $event->setValue($decrypted);
 
