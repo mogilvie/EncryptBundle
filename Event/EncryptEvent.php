@@ -18,7 +18,7 @@
 
 namespace SpecShaper\EncryptBundle\Event;
 
-use SpecShaper\NotificationBundle\Event\NotificationEvent;
+use Symfony\Component\EventDispatcher\Event;
 
 
 /**
@@ -32,9 +32,8 @@ use SpecShaper\NotificationBundle\Event\NotificationEvent;
  *
  * @since       Available since Release 1.0.0
  */
-class EncryptEvent
+class EncryptEvent extends Event
 {
-
 
     /**
      * The string / object to be encrypted or decrypted
@@ -56,10 +55,9 @@ class EncryptEvent
      * @param        $value
      * @param string $action
      */
-    public function __construct($value, $action = EncryptEvents::ENCRYPT)
+    public function __construct($value)
     {
         $this->value= $value;
-        $this->action = $action;
     }
 
     /**
@@ -77,22 +75,5 @@ class EncryptEvent
     {
         $this->value = $value;
     }
-
-    /**
-     * @return string
-     */
-    public function getAction(): string
-    {
-        return $this->action;
-    }
-
-    /**
-     * @param string $action
-     */
-    public function setAction(string $action)
-    {
-        $this->action = $action;
-    }
-
 
 }

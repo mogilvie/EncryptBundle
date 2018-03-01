@@ -200,21 +200,23 @@ to convert that string.
 You may also need to create a DataTransformer if you are using the parameter in a form
 with the DateType formtype.
 
-## Step 4: Decrypt in templates
+## Step 4: General Use
 
-If you query a repository using a select method, or get an array result 
-then the doctrine onLoad event subscriber will not decyrpt any encrypted
-values.
+The bundle comes with an DoctrineEncryptSubscriber. This subscriber catches the doctrine events
+onLoad, onFlush and postFlush.
 
-In this case, use the twig filter to decrypt your value when rendering.
+The onLoad event subscriber will decrypt your entity parameter at loading. This means that your forms
+and form fields will already be decrypted.
 
-```
-{{ employee.bankAccountNumber | decrypt }}
-```
+The onFlush and postFlush event subscribers will check if encryption is enabled, and encrypt the data
+before entry to the database.
 
-## Step 5: Call the Encryptor service directly
+So, in normal CRUD operation you do not need to do anything in the controller for encrypting or decrypting
+the data.
 
-You can of course inject the encryptor service any time into classes
+## Step 5: Decrypt in services and controllers
+
+You can of course inject the EncryptorInterface service any time into classes
 either by using autowiring or defining the injection in your service definitions.
 
 ```
@@ -227,4 +229,32 @@ public function __construct(EncryptorInterface $encryptor)
 {
     $this->encryptor = $encryptor;
 }
+
+public function indexAction(EncryptorInterface $encryptor)
+{
+    
+}
 ```
+
+Or you can dispatch the EncryptEvent.
+
+```
+public function indexAction(Dispatcher)
+{
+    
+}
+```
+
+## Step 5: Decrypt in templates
+
+If you query a repository using a select with an array result 
+then the doctrine onLoad event subscriber will not decyrpt any encrypted
+values.
+
+In this case, use the twig filter to decrypt your value when rendering.
+
+```
+{{ employee.bankAccountNumber | decrypt }}
+```
+
+
