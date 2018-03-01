@@ -221,17 +221,21 @@ either by using autowiring or defining the injection in your service definitions
 
 ```php
 <?php
+    use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
+    ...
     /**
      * @var SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
      */
     private $encryptor;
+    ...
     
+    // Inject the Encryptor from the service container at class construction
     public function __construct(EncryptorInterface $encryptor)
     {
         $this->encryptor = $encryptor;
     }
     
-    
+    // Inject the Encryptor in controller actions.
     public function editAction(EncryptorInterface $encryptor)
     {
         ...
@@ -247,11 +251,24 @@ either by using autowiring or defining the injection in your service definitions
 
 Or you can dispatch the EncryptEvent.
 
-```
-public function indexAction(Dispatcher)
-{
+```php
+<?php
+    ...
+    use SpecShaper\EncryptBundle\Event\EncryptEvent;
+    use SpecShaper\EncryptBundle\Event\EncryptEvents;
+    use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+    ...
     
-}
+    public function indexAction(EventDispatcherInterface $dispatcher)
+    {
+        ...
+        // An example encrypted value, you would get this from your database query.
+        $event = new EncryptEvent("3DDOXwqZAEEDPJDK8/LI4wDsftqaNCN2kkyt8+QWr8E=<ENC>");
+
+        $dispatcher->dispatch(EncryptEvents::DECRYPT, $event);
+        
+        $decrypted = $event->getValue();
+    }
 ```
 
 ## Step 5: Decrypt in templates
