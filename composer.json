@@ -22,10 +22,5 @@
     },
     "autoload" : {
         "psr-4": { "SpecShaper\\EncryptBundle\\": "" }
-    },
-    "extra" : {
-    "branch-alias" : {
-            "dev-master" : "1.0.x-dev"
-        }
     }
 }
