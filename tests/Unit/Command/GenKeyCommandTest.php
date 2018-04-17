@@ -27,7 +27,7 @@ class DomBuilderFactoryTest extends TestCase
         ));
 
         $output = $commandTester->getOutput();
-        
+        echo($commandTester->getDisplay());
         // Assert that the returned key is 44 characters long
         $this->assertTrue(str_len($commandTester->getDisplay()) === 44);
     }
