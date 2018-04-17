@@ -1,26 +1,25 @@
 <?php
 namespace tests\Unit;
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use SpecShaper\EncryptBundle\Command\GenKeyCommand ;
+use SpecShaper\EncryptBundle\Command\GenKeyCommand;
 
-class DomBuilderFactoryTest extends KernelTestCase
+class DomBuilderFactoryTest extends TestCase
 {
     /**
      * @test
      */
     public function testExecute(){
 
-        $kernel = static::createKernel();
-        $kernel->boot();
-
-        $application = new Application($kernel);
+        $application = new Application();
         $application->add(new GenKeyCommand());
 
-        $command = $application->find('generate:newsletter');
+        $command = $application->find('encrypt:genkey');
+        
         $commandTester = new CommandTester($command);
+        
         $commandTester->execute(array(
             'command' => $command->getName()
         ));
@@ -28,4 +27,5 @@ class DomBuilderFactoryTest extends KernelTestCase
         $output = $commandTester->getOutput();
         $this->assertContains('done',$output);
     }
+   
 }
