@@ -9,6 +9,8 @@ use SpecShaper\EncryptBundle\Command\GenKeyCommand;
 class DomBuilderFactoryTest extends TestCase
 {
     /**
+     * Test that an encryption key of 44 characters is created.
+     
      * @test
      */
     public function testExecute(){
@@ -25,8 +27,9 @@ class DomBuilderFactoryTest extends TestCase
         ));
 
         $output = $commandTester->getOutput();
-        echo($commandTester->getDisplay());
-        $this->assertNotEmpty($commandTester->getDisplay());
+        
+        // Assert that the returned key is 44 characters long
+        $this->assertTrue(str_len($commandTester->getDisplay()) === 44);
     }
    
 }
