@@ -33,7 +33,7 @@ services:
         factory: 'SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:createService'
         arguments:
             - '%spec_shaper_encrypt.method%'
-            - '%env(resolve:ENCRYPT_KEY)%'
+            - '%encrypt_key%'
 
     # Alias the service as EncryptorInterface
     SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
