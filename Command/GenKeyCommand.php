@@ -29,6 +29,7 @@ class GenKeyCommand extends Command
             // the short description shown while running "php bin/console list"
             ->setDescription('Generate a 256-bit encryption key.')
         ;
+
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

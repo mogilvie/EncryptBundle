@@ -49,3 +49,8 @@ services:
             - method: setSubscriber
               arguments:
                   - '@SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface'
+
+
+    SpecShaper\EncryptBundle\Command\GenKeyCommand:
+        tags:
+            -  { name: console.command }
