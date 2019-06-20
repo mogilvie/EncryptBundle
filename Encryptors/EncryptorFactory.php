@@ -20,10 +20,10 @@ class EncryptorFactory
      * @param $encryptKey
      * @return OpenSslEncryptor
      */
-    public function createService($method, $encryptKey)
+    public function createService($encryptor, $encryptKey)
     {
 
-        switch($method){
+        switch($encryptor){
             default:
                 $encryptor = new OpenSslEncryptor($encryptKey);
         }

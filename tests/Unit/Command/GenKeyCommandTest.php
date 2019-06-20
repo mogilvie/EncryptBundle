@@ -10,7 +10,7 @@ class DomBuilderFactoryTest extends TestCase
 {
     /**
      * Test that an encryption key of 44 characters is created.
-     
+
      * @test
      */
     public function testExecute(){

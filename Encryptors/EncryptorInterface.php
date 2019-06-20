@@ -9,6 +9,7 @@ namespace SpecShaper\EncryptBundle\Encryptors;
  */
 interface EncryptorInterface
 {
+
     /**
      * Must accept data and return encrypted data
      * @param string $data
