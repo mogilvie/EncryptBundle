@@ -198,7 +198,7 @@ For DateTime parameters store the date as a string, and use the getters and sett
 to convert that string.
 
 You may also need to create a DataTransformer if you are using the parameter in a form
-with the DateType formtype.
+with the DateType form type.
 
 ## Step 4: General Use
 
