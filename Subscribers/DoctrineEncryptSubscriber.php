@@ -78,7 +78,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $this->encryptor = $encryptor;
         $this->annotationArray = $annotationArray;
         $this->isDisabled = $isDisabled;
-
     }
 
 
@@ -128,6 +127,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * every time (Because it is going to differ from the un-encrypted value)
      *
      * @param OnFlushEventArgs $args
+     * @throws EncryptException
      */
     public function onFlush(OnFlushEventArgs $args)
     {
@@ -151,12 +151,12 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         }
     }
 
-
     /**
      * Processes the entity for an onFlush event.
      *
-     * @param object $entity
+     * @param               $entity
      * @param EntityManager $em
+     * @throws EncryptException
      */
     protected function entityOnFlush($entity, EntityManager $em)
     {
@@ -217,7 +217,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @Encrypted annotations
+     *
      * @param LifecycleEventArgs $args
+     * @throws EncryptException
      */
     public function postLoad(LifecycleEventArgs $args)
     {
@@ -247,7 +249,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $decrypted = $this->encryptor->decrypt($value);
 
         return $decrypted;
-
     }
 
     /**
@@ -268,7 +269,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                     $encryptedFields[] = $refProperty;
                 }
             }
-
         }
 
         return $encryptedFields;
@@ -277,11 +277,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     /**
      * Process (encrypt/decrypt) entities fields
      *
-     * @param                             $entity
-     * @param \Doctrine\ORM\EntityManager $em
-     * @param bool                        $isEncryptOperation
-     *
+     * @param               $entity
+     * @param EntityManager $em
+     * @param bool          $isEncryptOperation
      * @return bool
+     * @throws EncryptException
      */
     protected function processFields($entity, EntityManager $em, $isEncryptOperation = true)
     {
@@ -292,6 +292,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $oid = spl_object_hash($entity);
 
         foreach ($properties as $refProperty) {
+
             $value = $refProperty->getValue($entity);
 
             // Skip any empty values.
@@ -303,17 +304,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 throw new EncryptException('You cannot encrypt an object at ' . $refProperty->class .':'.  $refProperty->getName() , $value);
             }
 
-            // If the required opteration is to encrypt then encrypt the value.
+            // If the required operation is to encrypt then encrypt the value.
             if($isEncryptOperation) {
-                $encrypted = $this->encryptor->encrypt($value);
-                $value =  $encrypted . DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX ;
+                $encryptedValue = $this->encryptor->encrypt($value);
+                $refProperty->setValue($entity, $encryptedValue);
             } else {
-                $value = $this->decryptValue($value);
-            }
-
-            $refProperty->setValue($entity, $value);
-
-            if (!$isEncryptOperation) {
+                $decryptedValue = $this->decryptValue($value);
+                $refProperty->setValue($entity, $decryptedValue);
                 //we don't want the object to be dirty immediately after reading
                 $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $value);
             }
@@ -378,6 +375,4 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         return $encryptedFields;
     }
-
-
 }

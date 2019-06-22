@@ -4,13 +4,13 @@ A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrin
 
 Features include:
 
-- Written for Symfony verison 3.x.x
+- Written for Symfony version 3.4
 - Uses OpenSSL
 - Uses Lifecycle events
 
 **Warning**
 - This bundle has not been unit tested.
-- It has only been running on a Symfony2 v3.0.1 project, and not backward
+- It has only been running on a Symfony 3.4 project, and not backward
 compatibility tested.
 
 Features road map:
@@ -29,8 +29,8 @@ This bundle is under the MIT license. See the complete license in the bundle:
 
 ## About
 
-EncryptBundle has been written for the [SpecShaper](http://about.specshaper.com) and [Parolla](http://parolla.ie) websites
-to encode users private data. The bundle will be expanded as part of a larger EU GDPR data management bundle.
+EncryptBundle has been written for the [SpecShaper](http://about.specshaper.com) and [Parolla](https://www.parolla.ie) websites
+to encode users private data. The bundle is expanded in a larger [gdpr-bundle](https://github.com/mogilvie/GdprBundle).
 
 ## Reporting an issue or a feature request
 
@@ -115,7 +115,7 @@ can be configured to extend the bundle.
 You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
 contain the \<ENC> suffix.
 
-You can extend the EnryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
+You can extend the EncryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
 to point the bundle at your custom subscriber.
 
 If you want to define your own annotation, then this can be used to trigger encryption by adding the annotation 
@@ -166,7 +166,7 @@ Add the annotation '@Encrypted' to the parameters that you want encrypted.
 ```
 Where encrypting a field you will need to set the column type as string.  
 
-Your getters and setters may also need to be type delcared.  
+Your getters and setters may also need to be type declared.  
 
 For example, boolean should either be return declared bool, or return a bool using a ternary method.  
 

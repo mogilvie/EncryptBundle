@@ -27,7 +27,10 @@ services:
             - { name: kernel.event_subscriber, connection: default }
 
     # Factory to create the encryptor/decryptor
-    SpecShaper\EncryptBundle\Encryptors\EncryptorFactory: ~
+    SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:
+        arguments: ['@logger']
+        tags:
+            - { name: monolog.logger, channel: app }
 
     # The encryptor service created by the factory according to the passed method and using the encrypt_key
     SpecShaper\EncryptBundle\Encryptors\EncryptorService:

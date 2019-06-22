@@ -8,65 +8,84 @@
 
 namespace SpecShaper\EncryptBundle\tests\Unit\Encryptors;
 
-use SpecShaper\EncryptBundle\Encryptors\EncryptorFactory;
 use SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor;
+use SpecShaper\EncryptBundle\Exception\EncryptException;
 
 class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
 {
 
-    private $encryptedValue;
+    private $encrypt_key = "YBmNcBGfrZoayB+V254wdYa/abvxSUWJsjCtlMc1tRI=";
 
-    private function getEncryptor()
+    public function testEncryptException()
     {
-        $factory = new EncryptorFactory();
+        $this->expectException(EncryptException::class);
 
-        $encryptKey = "YBmNcBGfrZoayB+V254wdYa/abvxSUWJsjCtlMc1tRI=";
-        
-        return $factory->createService(OpenSslEncryptor::class, $encryptKey);
+        $object = new \stdClass();
+        $object->test = 'Test';
+
+        $encryptor  = new OpenSslEncryptor($this->encrypt_key);
+
+        $encryptor->encrypt($object);
     }
-    
+
+    /**
+     * @throws \Exception
+     */
     public function testEncrypt()
     {
-        $encryptor = $this->getEncryptor();
+        $encryptor  = new OpenSslEncryptor($this->encrypt_key);
 
+        // Assert that empty value returns an empty value.
         $result = $encryptor->encrypt(null);
         $this->assertTrue($result === null);
 
-        $object = new stdClass();
-        $object->test = 'Test';
-        $result = $encryptor->encrypt($object);
-        $this->assertTrue($result->test === 'Test');
+        // Assert that "<ENC>" returns an empty value;
+        $result = $encryptor->encrypt("<ENC>");
+        $this->assertTrue($result === "<ENC>");
 
-        $result = $encryptor->encrypt('Honey, where are my pants?');
-        $this->assertTrue($result === 'Honey, where are my pants?');
-
-        $this->encryptedValue = $result;
+        // Assert that an encrypted then decrypted value returns the original value;
+        $value = 'Honey, where are my pants?';
+        $encryptedValue = $encryptor->encrypt($value);
+        $decrypted = $encryptor->decrypt($encryptedValue);
+        $this->assertTrue($value === $decrypted);
 
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function testDecryptException()
+    {
+        $this->expectException(EncryptException::class);
+        // or for PHPUnit < 5.2
+        // $this->setExpectedException(InvalidArgumentException::class);
+
+        $object = new \stdClass();
+        $object->test = 'Test';
+
+        //...and then add your test code that generates the exception
+        $encryptor  = new OpenSslEncryptor($this->encrypt_key);
+        $encryptor->decrypt($object);
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function testDecrypt()
     {
 
-        $encryptor = $this->getEncryptor();
+        $encryptor  = new OpenSslEncryptor($this->encrypt_key);
 
-        // Test null returned.
-        $result = $encryptor->encrypt(null);
+        // Assert that empty value returns an empty value.
+        $result = $encryptor->decrypt(null);
         $this->assertTrue($result === null);
 
-        // Test object returned.
-        $object = new stdClass();
-        $object->test = 'Test';
-        $result = $encryptor->encrypt($object);
-        $this->assertTrue($result->test === 'Test');
+        // Assert that string without "<ENC>" returns an same string;
+        $result = $encryptor->decrypt("Test value <ENC");
+        $this->assertTrue($result === "Test value <ENC");
 
-        // Test decrypt without <ENC> returns original value.
-        $result = $encryptor->encrypt('322YBmN1tRI=');
-        $this->assertTrue($result === '322YBmN1tRI=');
-
-        $result = $encryptor->encrypt($this->encryptedValue);
-        $this->assertTrue($result === 'Honey, where are my pants?');
-
-        $this->encryptedValue = $result;
-
+        // Assert that an encrypted value returns the expected decrypted value;
+        $decrypted = $encryptor->decrypt('5hhCphjZSgXvZgAu9t3O99fnFsdDgHr67QR7lf8NVZdgHTH8Dj/gsfQ+AI2agJOc<ENC>');
+        $this->assertTrue($decrypted === 'Honey, where are my pants?');
     }
 }

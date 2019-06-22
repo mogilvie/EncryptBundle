@@ -18,10 +18,12 @@
         "symfony/console": "^3.2 || ^4.0",
         "symfony/framework-bundle": "^3.2 || ^4.0",
         "doctrine/orm": "^2.5",
-        "doctrine/doctrine-bundle": "^1.6"
+        "doctrine/doctrine-bundle": "^1.6",
+        "symfony/monolog-bundle": "^3.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^7"
+
     },
     "autoload" : {
         "psr-4": { "SpecShaper\\EncryptBundle\\": "" }
