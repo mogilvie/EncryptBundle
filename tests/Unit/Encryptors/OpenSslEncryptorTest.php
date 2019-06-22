@@ -60,8 +60,8 @@ class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($result->test === 'Test');
 
         // Test decrypt without <ENC> returns original value.
-        $result = $encryptor->encrypt('32YBmN1tRI=');
-        $this->assertTrue($result === '32YBmN1tRI=');
+        $result = $encryptor->encrypt('322YBmN1tRI=');
+        $this->assertTrue($result === '322YBmN1tRI=');
 
         $result = $encryptor->encrypt($this->encryptedValue);
         $this->assertTrue($result === 'Honey, where are my pants?');
