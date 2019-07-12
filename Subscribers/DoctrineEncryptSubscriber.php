@@ -57,9 +57,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     protected $encryptedFieldCache = array();
 
     /**
-     * Before flushing the objects out to the database, we modify their password value to the
-     * encrypted value. Since we want the password to remain decrypted on the entity after a flush,
-     * we have to write the decrypted value back to the entity.
+     * Remember which entities have to be decrypted back in postFlush after onFlush.
+     *
      * @var array
      */
     private $postFlushDecryptQueue = array();
@@ -79,7 +78,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $this->annotationArray = $annotationArray;
         $this->isDisabled = $isDisabled;
     }
-
 
     /**
      * Return the encryptor.
@@ -164,21 +162,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
             return;
         }
 
-        $objId = spl_object_hash($entity);
-
-        $fields = array();
-        foreach ($this->getEncryptedFields($entity, $em) as $field) {
-            $fields[$field->getName()] = array(
-                'field' => $field,
-                'value' => $field->getValue($entity),
-            );
-        }
-
-        $this->postFlushDecryptQueue[$objId] = array(
-            'entity' => $entity,
-            'fields' => $fields,
-        );
-
+        $this->postFlushDecryptQueue[] = $entity;
         $this->processFields($entity, $em);
     }
 
@@ -193,21 +177,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
             return;
         }
 
-        $unitOfWork = $args->getEntityManager()->getUnitOfWork();
-
-        foreach ($this->postFlushDecryptQueue as $pair) {
-            $fieldPairs = $pair['fields'];
-            $entity = $pair['entity'];
-            $oid = spl_object_hash($entity);
-
-            foreach ($fieldPairs as $fieldPair) {
-                /** @var \ReflectionProperty $field */
-                $field = $fieldPair['field'];
-
-                $field->setValue($entity, $fieldPair['value']);
-                $unitOfWork->setOriginalEntityProperty($oid, $field->getName(), $fieldPair['value']);
-            }
-
+        foreach ($this->postFlushDecryptQueue as $entity) {
+            $this->processFields($entity, $args->getEntityManager(), false);
             $this->addToDecodedRegistry($entity);
         }
 
