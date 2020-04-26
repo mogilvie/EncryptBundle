@@ -20,30 +20,24 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder('spec_shaper_encrypt');
-        if (method_exists($treeBuilder, 'getRootNode')) {
-            $rootNode = $treeBuilder->getRootNode();
-        } else {
-            // for symfony/config 4.1 and older
-            $rootNode = $treeBuilder->root('spec_shaper_encrypt');
-        }
+        
+        $rootNode = $treeBuilder->getRootNode();
 
-            $rootNode
-                ->children()
-                    ->scalarNode('method')->defaultValue('OpenSSL')->end()
-                    ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
-                    ->scalarNode('is_disabled')->defaultValue(false)->end()
-                    ->arrayNode('annotation_classes')
-                        ->treatNullLike(array())
-                        ->prototype('scalar')->end()
-                        ->defaultValue(array(
-                            Encrypted::class
-                        ))
-                    ->end()
+        $rootNode
+            ->children()
+                ->scalarNode('method')->defaultValue('OpenSSL')->end()
+                ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                ->scalarNode('is_disabled')->defaultValue(false)->end()
+                ->arrayNode('annotation_classes')
+                    ->treatNullLike(array())
+                    ->prototype('scalar')->end()
+                    ->defaultValue(array(
+                        Encrypted::class
+                    ))
                 ->end()
-            ;
-
+            ->end()
+        ;
 
         return $treeBuilder;
     }
 }
-
