@@ -21,7 +21,12 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('spec_shaper_encrypt');
 
-        $rootNode = $treeBuilder->getRootNode();
+        if (method_exists($treeBuilder, 'getRootNode')) {
+            $rootNode = $treeBuilder->getRootNode();
+        } else {
+            // for symfony/config 4.1 and older
+            $rootNode = $treeBuilder->root('spec_shaper_encrypt');
+        }
 
         $rootNode
             ->children()
