@@ -34,7 +34,7 @@ services:
 
     # The encryptor service created by the factory according to the passed method and using the encrypt_key
     SpecShaper\EncryptBundle\Encryptors\EncryptorService:
-        factory: ['SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
+        factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
         arguments:
             - '%spec_shaper_encrypt.method%'
             - '%spec_shaper_encrypt.encrypt_key%'
