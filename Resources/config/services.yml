@@ -33,16 +33,11 @@ services:
             - { name: monolog.logger, channel: app }
 
     # The encryptor service created by the factory according to the passed method and using the encrypt_key
-    SpecShaper\EncryptBundle\Encryptors\EncryptorService:
+    SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
         factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
         arguments:
             - '%spec_shaper_encrypt.method%'
             - '%spec_shaper_encrypt.encrypt_key%'
-
-    # Alias the service as EncryptorInterface
-    SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
-        alias: 'SpecShaper\EncryptBundle\Encryptors\EncryptorService'
-         # public: true
 
     # Encrypt Twig extension that defins the decrypt filter.
     SpecShaper\EncryptBundle\Twig\EncryptExtension:
