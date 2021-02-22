@@ -3,9 +3,11 @@
 namespace SpecShaper\EncryptBundle\Twig;
 
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 
-class EncryptExtension extends \Twig_Extension
+class EncryptExtension extends AbstractExtension
 {
     /**
      * @var EncryptorInterface
@@ -20,7 +22,7 @@ class EncryptExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            new \Twig_SimpleFilter('decrypt', array($this, 'decryptFilter'))
+            new TwigFilter('decrypt', array($this, 'decryptFilter'))
         );
     }
 
