@@ -87,30 +87,33 @@ Generate a 256 bit key using the command provided in the bundle.
 $ bin/console encrypt:genkey
 ```
  
-Copy the key into your parameters file.
+Copy the key into your .env file.
+```
+###> encrypt-bundle ###
+ENCRYPT_KEY=<YOUR KEY HERE>
+###< encrypt-bundle ###
+```
 
+And resolve in your parameters file.
 ```yaml
 // app/config/parameters.yml
-
     ...
-    encrypt_key: <your_key_here>
-    
+    encrypt_key: '%env(resolve:ENCRYPT_KEY)%'
 ```
 
 A config file entry is not required, however there are some options that
 can be configured to extend the bundle.
 
 ```yaml
-// app/config/config.yml
-
-    ...
-    spec_shaper_encrypt:
-        is_disabled: false
-        subscriber_class: 'AppBundle\Subscribers\OtherSubscriber'
-        annotation_classes:
-            - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
-            - 'AppBundle\Annotations\CustomAnnotation'
-```   
+// app/config/packages/spec_shaper_encrypt.yml
+spec_shaper_encrypt:
+  # Enter your own subscriber below or comment out to use the bundle subscriber
+  # subscriber_class: 'SpecShaper\GdprBundle\Subscribers\GdprSubscriber'
+  is_disabled : false
+  annotation_classes:
+    - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
+    - 'AppBundle\Annotations\CustomAnnotation'
+```
 You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
 contain the \<ENC> suffix.
 
