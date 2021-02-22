@@ -4,14 +4,13 @@ A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrin
 
 Features include:
 
-- Written for Symfony version 3.4
+- Master and v2 are Symfony 5.
+- v1 is Symfony 3.4 and not active any more.
 - Uses OpenSSL
 - Uses Lifecycle events
 
 **Warning**
 - This bundle has not been unit tested.
-- It has only been running on a Symfony 3.4 project, and not backward
-compatibility tested.
 
 Features road map:
 
