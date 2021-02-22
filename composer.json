@@ -17,6 +17,7 @@
         "php": ">=7.1",
         "symfony/framework-bundle": "^5.0",
         "symfony/console": "^5.0",
+        "doctrine/orm": "^2.5",
         "symfony/doctrine-bundle": "^2.0",
         "symfony/monolog-bundle": "^3.4"
     },
