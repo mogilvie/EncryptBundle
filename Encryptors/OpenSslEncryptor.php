@@ -51,7 +51,7 @@ class OpenSslEncryptor implements EncryptorInterface
         }
 
         // If the value already has the suffix <ENC> then ignore.
-        if(substr($data, -5) === DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
+        if(DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX === substr($data, -5)) {
             return $data;
         }
 
@@ -85,7 +85,7 @@ class OpenSslEncryptor implements EncryptorInterface
     {
 
         // If the value is an object or null then ignore
-        if($data === null) {
+        if(is_null($data)) {
             return $data;
         }
 
@@ -94,13 +94,13 @@ class OpenSslEncryptor implements EncryptorInterface
         }
 
         // If the value does not have the suffix <ENC> then ignore.
-        if(substr($data, -5) !== DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX) {
+        if(DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX !== substr($data, -5)) {
             return $data;
         }
 
         $data = substr($data, 0,-5);
 
-        // If the data is just <ENC> the return null;
+        // If the data was just <ENC> the return null;
         if(empty($data)) {
             return $data;
         }
@@ -135,7 +135,7 @@ class OpenSslEncryptor implements EncryptorInterface
      */
     private function getSecretKey(){
 
-        if($this->secretKey === null){
+        if(empty($this->secretKey)){
             throw new EncryptException('The bundle specshaper\encrypt-bundle requires a parameter.yml value for "encrypt_key"
             Use cli command "php bin/console encrypt:genkey" to create a key.');
         }
@@ -145,7 +145,7 @@ class OpenSslEncryptor implements EncryptorInterface
 
         $keyLengthOctet = mb_strlen($key, '8bit');
 
-        if ($keyLengthOctet !== 32) {
+        if (32 !== $keyLengthOctet) {
             throw new \Exception("Needs a 256-bit key, '".($keyLengthOctet * 8)."'bit given!");
         }
 
