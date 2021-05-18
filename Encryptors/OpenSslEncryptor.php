@@ -21,12 +21,19 @@ class OpenSslEncryptor implements EncryptorInterface
     private $secretKey;
 
     /**
-     * Initialization of encryptor
+     * @var EventDispatcherInterface;
+     */
+    private $dispatcher;
+
+    /**
+     * OpenSslEncryptor constructor.
+     * @param EventDispatcherInterface $dispatcher
      * @param string $key
      */
-    public function __construct($key)
+    public function __construct(EventDispatcherInterface $dispatcher, string $key)
     {
         $this->secretKey = $key;
+        $this->dispatcher = $dispatcher;
     }
 
     public function __toString()
@@ -135,9 +142,19 @@ class OpenSslEncryptor implements EncryptorInterface
      */
     private function getSecretKey(){
 
+        // Throw an event to allow encryption keys to be defined during runtime.
+        $getKeyEvent = new EncryptKeyEvent();
+        $this->dispatcher->dispatch($getKeyEvent, EncryptKeyEvents::LOAD_KEY);
+
+        // If the event is returned with a key, then override the parameter defined key.
+        if(null !== $getKeyEvent->getKey()){
+            $this->secretKey = $getKeyEvent->getKey();
+        }
+
+        // If the key is still empty, then throw an exception.
         if(empty($this->secretKey)){
             throw new EncryptException('The bundle specshaper\encrypt-bundle requires a parameter.yml value for "encrypt_key"
-            Use cli command "php bin/console encrypt:genkey" to create a key.');
+            Use cli command "php bin/console encrypt:genkey" to create a key, or set via a listener on the EncryptKeyEvents::LOAD_KEY event');
         }
 
         // Decode the key
