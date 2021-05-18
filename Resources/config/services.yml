@@ -28,7 +28,7 @@ services:
 
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:
-        arguments: ['@logger']
+        arguments: ['@logger', '@event_dispatcher']
         tags:
             - { name: monolog.logger, channel: app }
 
