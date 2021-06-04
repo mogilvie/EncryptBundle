@@ -125,7 +125,7 @@ class name to the 'annotation_classes' option array.
 
 ### Alternative EncryptKeyEvent
 The EncryptKey can be set via a dispatched event listener, which overrides any .env or param.yml defined key.
-Create a lisenter on the EncryptKeyEvent::LOAD_KEY event and set your encryption key at that point.
+Create a listener for the EncryptKeyEvents::LOAD_KEY event and set your encryption key at that point.
 
 ## Step 3: Create the entities
 Add the Annotation entity to the declared classes in the entity.
