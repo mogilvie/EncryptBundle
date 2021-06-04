@@ -4,6 +4,9 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 
 use SpecShaper\EncryptBundle\Exception\EncryptException;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use SpecShaper\EncryptBundle\Event\EncryptKeyEvent;
+use SpecShaper\EncryptBundle\Event\EncryptKeyEvents;
 
 /**
  * Class for OpenSSL encryption
