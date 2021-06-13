@@ -275,8 +275,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 throw new EncryptException('You cannot encrypt an object at ' . $refProperty->class .':'.  $refProperty->getName() , $value);
             }
 
-            // If the required operation is to encrypt then encrypt the value.
-            if($isEncryptOperation) {
+            // If the required operation is to encrypt then encrypt the value, but only if it's not already encrypted
+            if(
+                    $isEncryptOperation
+                &&  self::ENCRYPTED_SUFFIX !== substr($value, -5)
+            ) {
                 $encryptedValue = $this->encryptor->encrypt($value);
                 $refProperty->setValue($entity, $encryptedValue);
             } else {
