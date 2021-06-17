@@ -180,6 +180,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         foreach ($this->postFlushDecryptQueue as $entity) {
             $this->processFields($entity, $args->getEntityManager(), false);
             $this->addToDecodedRegistry($entity);
+            $args->getEntityManager()->detach($entity); // detach due to excessive data insertion becomming slow
         }
 
         $this->postFlushDecryptQueue = array();
