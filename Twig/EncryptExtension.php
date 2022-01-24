@@ -19,6 +19,9 @@ class EncryptExtension extends AbstractExtension
         $this->encryptor = $encryptor;
     }
 
+    /**
+     * @return TwigFilter[]
+     */
     public function getFilters()
     {
         return array(
