@@ -32,6 +32,9 @@ class GenKeyCommand extends Command
 
     }
 
+    /**
+     * @return int|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $encryption_key_256bit = base64_encode(openssl_random_pseudo_bytes(32));
