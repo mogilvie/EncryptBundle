@@ -22,7 +22,7 @@ class EncryptExtension extends AbstractExtension
     /**
      * @return TwigFilter[]
      */
-    public function getFilters()
+    public function getFilters(): array
     {
         return array(
             new TwigFilter('decrypt', array($this, 'decryptFilter'))
