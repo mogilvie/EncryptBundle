@@ -6,6 +6,7 @@ use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 /**
  * This is the class that validates and merges configuration from your app/config files.
@@ -17,7 +18,7 @@ class Configuration implements ConfigurationInterface
     /**
      * @return TreeBuilder
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('spec_shaper_encrypt');
         
