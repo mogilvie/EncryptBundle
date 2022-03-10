@@ -6,7 +6,6 @@
  * Time: 13:41
  */
 
-// src/AppBundle/Command/CreateUserCommand.php
 namespace SpecShaper\EncryptBundle\Command;
 
 use Symfony\Component\Console\Command\Command;
@@ -17,9 +16,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class GenKeyCommand extends Command
 {
-    /**
-     *
-     */
     protected function configure()
     {
         $this
@@ -29,13 +25,9 @@ class GenKeyCommand extends Command
             // the short description shown while running "php bin/console list"
             ->setDescription('Generate a 256-bit encryption key.')
         ;
-
     }
 
-    /**
-     * @return int|void
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $encryption_key_256bit = base64_encode(openssl_random_pseudo_bytes(32));
 
@@ -44,6 +36,6 @@ class GenKeyCommand extends Command
         $io->title('Generated Key');
         $io->success($encryption_key_256bit);
 
-        return;
+        return Command::SUCCESS;
     }
 }
