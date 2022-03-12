@@ -1,10 +1,10 @@
 # SpecShaper Encrypt Bundle
 
-A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrine lifecycle events.  
+A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrine lifecycle events.
 
 Features include:
-
-- Master and v2 are Symfony 5.
+- V3 is Symfony 5.4|6 PHP 8
+- V2 is Symfony 5.
 - v1 is Symfony 3.4 and not active any more.
 - Uses OpenSSL
 - Uses Lifecycle events
@@ -105,17 +105,17 @@ A config file entry is not required, however there are some options that
 can be configured to extend the bundle.
 
 ```yaml
-// app/config/packages/spec_shaper_encrypt.yml
-spec_shaper_encrypt:
-  # Enter your own subscriber below or comment out to use the bundle subscriber
-  # subscriber_class: 'SpecShaper\GdprBundle\Subscribers\GdprSubscriber'
-  is_disabled : false
-  annotation_classes:
-    - 'SpecShaper\EncryptBundle\Annotations\Encrypted'
-    - 'AppBundle\Annotations\CustomAnnotation'
+# The encryptor service created by the factory according to the passed method and using the encrypt_key
+SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
+  factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
+  arguments:
+    $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
+    $encryptorClass: '%spec_shaper_encrypt.encryptor_class%' #optional
 ```
 You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
 contain the \<ENC> suffix.
+
+You can pass the class name of your own encyptor service using the optional encryptorClass option.
 
 You can extend the EncryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
 to point the bundle at your custom subscriber.
@@ -143,31 +143,26 @@ Add the annotation '@Encrypted' to the parameters that you want encrypted.
     /**
      * A PPS number is always 7 numbers followed by either one or two letters.
      * 
-     * @var string
      * @Encrypted
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      */
-    protected $taxNumber;
+    protected string $taxNumber;
     
     /**
      * True if the user is self employed.
      * 
-     * @var string | boolean
-     * 
      * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $isSelfEmployed;
+    protected ?bool $isSelfEmployed;
     
     /**
      * Date of birth
      * 
-     * @var string | \DateTimeInterface
-     * 
      * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $dob;
+    protected ?String $dob;
    
 ```
 Where encrypting a field you will need to set the column type as string.  
@@ -193,7 +188,7 @@ For example, boolean should either be return declared bool, or return a bool usi
      *
      * @return boolean
      */
-    public function isSelfEmployed()
+    public function isSelfEmployed(): bool
     {
         return ($this->isSelfEmployed == 1 ? true: false);
     }

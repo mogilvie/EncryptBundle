@@ -4,5 +4,5 @@ namespace SpecShaper\EncryptBundle\Event;
 
 final class EncryptKeyEvents
 {
-    const LOAD_KEY = 'sseb.load_key';
+    public const LOAD_KEY = 'sseb.load_key';
 }

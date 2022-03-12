@@ -28,7 +28,7 @@ services:
 
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:
-        arguments: ['@logger', '@event_dispatcher']
+        arguments: ['@event_dispatcher']
         tags:
             - { name: monolog.logger, channel: app }
 
@@ -36,8 +36,7 @@ services:
     SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
         factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
         arguments:
-            - '%spec_shaper_encrypt.method%'
-            - '%spec_shaper_encrypt.encrypt_key%'
+            $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
 
     # Encrypt Twig extension that defins the decrypt filter.
     SpecShaper\EncryptBundle\Twig\EncryptExtension:
@@ -47,8 +46,8 @@ services:
     SpecShaper\EncryptBundle\Command\DecryptCommand:
         calls:
             - method: setSubscriber
-              arguments:
-                  - '@SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface'
+        arguments:
+            - '@SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface'
     
     # CLI command to generate a 256 bit encryption key
     SpecShaper\EncryptBundle\Command\GenKeyCommand:

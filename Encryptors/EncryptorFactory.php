@@ -1,44 +1,30 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mark
- * Date: 22/10/17
- * Time: 22:43
- */
+
 namespace SpecShaper\EncryptBundle\Encryptors;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class EncryptorFactory
 {
-    const SUPPORTED_EXTENSIONS = [
-        OpenSslEncryptor::class
-    ];
+    public const SUPPORTED_EXTENSION_OPENSSL = OpenSslEncryptor::class;
 
-    private $logger;
-    
-    private $dispatcher;
+    private EventDispatcherInterface $dispatcher;
 
-    public function __construct(LoggerInterface $logger, EventDispatcherInterface $dispatcher)
+    public function __construct(EventDispatcherInterface $dispatcher)
     {
-        $this->logger = $logger;
         $this->dispatcher = $dispatcher;
     }
 
     /**
-     * @param $method
-     * @param $encryptKey
-     * @return OpenSslEncryptor
+     * Create service will return the desired encryption service.
+     *
+     * @param string      $encryptKey     256-bit encryption key
+     * @param string|null $encryptorClass the desired encryptor, defaults to OpenSSL, but can be overridden by passing a classname
      */
-    public function createService($encryptor, $encryptKey)
+    public function createService(string $encryptKey, ?string $encryptorClass = self::SUPPORTED_EXTENSION_OPENSSL): EncryptorInterface
     {
-        switch($encryptor){
-            default:
-                $encryptor = new OpenSslEncryptor($this->dispatcher, $encryptKey);
-        }
-
+        $encryptor = new $encryptorClass($this->dispatcher);
+        $encryptor->setSecretKey($encryptKey);
         return $encryptor;
     }
-
 }
