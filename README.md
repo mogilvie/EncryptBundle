@@ -16,7 +16,7 @@ Features road map:
 
 - [x] Create a factory method to expand for different encryptors
 - [x] Create a twig function to decrypt encoded values
-- [ ] Expand parameters to allow selection of encoding method
+- [x] Expand parameters to allow selection of encoding method
 - [ ] Create CLI commands to encrypt and decrypt the entire database
 - [ ] Handle DateTime data types via the bundle.
 
