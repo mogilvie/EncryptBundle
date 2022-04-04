@@ -2,9 +2,6 @@
 
 namespace SpecShaper\EncryptBundle\Event;
 
-/**
- * EncryptEventInterface.
- */
 interface EncryptEventInterface
 {
     public function getValue(): ?string;

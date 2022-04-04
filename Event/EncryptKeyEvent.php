@@ -4,15 +4,10 @@ namespace SpecShaper\EncryptBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
-/**
- * EncryptEvent.
- */
 class EncryptKeyEvent extends Event
 {
     /**
      * The key to be used instead of the parameter key.
-     *
-     * @var string|null
      */
     protected ?string $key = null;
 

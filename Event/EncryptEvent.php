@@ -4,9 +4,6 @@ namespace SpecShaper\EncryptBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
-/**
- * EncryptEvent.
- */
 class EncryptEvent extends Event implements EncryptEventInterface
 {
     /**

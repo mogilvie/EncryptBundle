@@ -1,7 +1,7 @@
 #Change Log
 
 ## 3.0.1 (2022-03-13) Symfony 6 and PHP 8
-Major backward compatibality breaking change to Symfony 6 and PHP 8.
+Major backward compatibility breaking change to Symfony 6 and PHP 8.
 
 ### Encyptor Factory
 - Remove logging and event dispatcher constructors
