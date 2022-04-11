@@ -123,6 +123,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
             $this->entityOnFlush($entity, $em);
+            $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
         }
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
