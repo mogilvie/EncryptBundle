@@ -7,8 +7,6 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
-use Doctrine\ORM\Event\PostFlushEventArgs;
-use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
 use ReflectionProperty;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
@@ -42,28 +40,10 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     protected Reader $annReader;
 
     /**
-     * Registr to avoid multi decode operations for one entity.
-     */
-    private array $decodedRegistry = [];
-
-    /**
-     * An array of decoded values populated during the onLoad event.
-     * Used to compare any resubmitted values during onFlush event.
-     * If the flushed unencoded value is the same as in the array then there is no change
-     * to the value and the entity field update is removed from the Unit of Work change set.
-     */
-    private array $decodedValues = [];
-
-    /**
      * Caches information on an entity's encrypted fields in an array keyed on
      * the entity's class name. The value will be a list of Reflected fields that are encrypted.
      */
     protected array $encryptedFieldCache = [];
-
-    /**
-     * Remember which entities have to be decrypted back in postFlush after onFlush.
-     */
-    private array $postFlushDecryptQueue = [];
 
     private bool $isDisabled;
 
@@ -103,7 +83,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         return [
             Events::postLoad,
             Events::onFlush,
-            Events::postFlush,
         ];
     }
 
@@ -119,62 +98,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $em = $args->getEntityManager();
         $unitOfWork = $em->getUnitOfWork();
 
-        $this->postFlushDecryptQueue = [];
-
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
-            $this->entityOnFlush($entity, $em);
-            $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
+            $this->processFields($entity, $em, true);
         }
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            $this->entityOnFlush($entity, $em);
-            $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
+            $this->processFields($entity, $em, true);
         }
-    }
-
-    /**
-     * Processes the entity for an onFlush event.
-     *
-     * @param $entity
-     * @param EntityManagerInterface $em
-     * @throws EncryptException
-     */
-    protected function entityOnFlush($entity, EntityManagerInterface $em): void
-    {
-        // If encryption is disabled return void.
-        if ($this->isDisabled) {
-            return;
-        }
-
-        // Add the entity to a decrypt Queue for postFlush decryption.
-        $this->postFlushDecryptQueue[] = $entity;
-
-        // Encrypt entity fields.
-        $this->processFields($entity, $em, true);
-    }
-
-    /**
-     * After we have persisted the entities, we want to have the
-     * decrypted information available once more.
-     */
-    public function postFlush(PostFlushEventArgs $args): void
-    {
-        if ($this->isDisabled) {
-            return;
-        }
-
-        foreach ($this->postFlushDecryptQueue as $entity) {
-            $hasFieldsEncrypted = $this->processFields($entity, $args->getEntityManager(), false);
-
-            // If no fields were marked encrypted then skip.
-            if (false === $hasFieldsEncrypted) {
-                continue;
-            }
-
-            $this->addToDecodedRegistry($entity);
-        }
-
-        $this->postFlushDecryptQueue = [];
     }
 
     /**
@@ -186,20 +116,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     public function postLoad(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();
-        $em = $args->getEntityManager();
-
-        // If this entity has already been decoded in an earlier postFlush event then do nothing.
-        if ($this->hasInDecodedRegistry($entity)) {
-            return;
-        }
-
         // Decrypt the entity fields.
-        $hasFieldsEncrypted = $this->processFields($entity, $args->getEntityManager(), false);
-
-        // If the entity contained encrypted fields that were decrypted then add to a registry.
-        if ($hasFieldsEncrypted) {
-            $this->addToDecodedRegistry($entity);
-        }
+        $this->processFields($entity, $args->getEntityManager(), false);
     }
 
     /**
@@ -247,10 +165,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $unitOfWork = $em->getUnitOfWork();
         $oid = spl_object_id($entity);
 
-        if(!array_key_exists($oid, $this->decodedValues)){
-            $this->decodedValues[$oid] = [];
-        }
-
         foreach ($properties as $key => $refProperty) {
 
             // Get the value in the entity.
@@ -267,60 +181,27 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
             // Encryption is fired by onFlush event, else it is an onLoad event.
             if ($isEncryptOperation) {
+                $changeSet = $unitOfWork->getEntityChangeSet($entity);
 
-                // If the field has already been decrypted by the onLoad event, and the flushed value is the same
-                if(isset($this->decodedValues[$oid][$refProperty->getName()]) && $this->decodedValues[$oid][$refProperty->getName()][1] === $value){
-
-                    // Remove the field from the UoW change set.
-                    unset($unitOfWork->getEntityChangeSet($entity)[$refProperty->getName()]);
-
-                    // Get the originally created encrypted value.
-                    $encryptedValue = $this->decodedValues[$oid][$refProperty->getName()][0];
-
-                    // Reset that to the original in the UoW.
-                    $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $encryptedValue);
-                } else {
-                    // The field is part of an insert or the value of the field has changed, then create a new encrypted value.
+                // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
+                if (isset($changeSet[$refProperty->getName()])) {
                     $encryptedValue = $this->encryptor->encrypt($value);
+                    $refProperty->setValue($entity, $encryptedValue);
+                    $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
+                    // Restore the decrypted value after the change set update
+                    $refProperty->setValue($entity, $value);
                 }
-
-                // Replace the unencrypted value with the encrypted value on the entity.
-                $refProperty->setValue($entity, $encryptedValue);
-
             } else {
                 // Decryption is fired by onLoad and postFlush events.
                 $decryptedValue = $this->decryptValue($value);
                 $refProperty->setValue($entity, $decryptedValue);
 
-                // Store the decrypted value for comparison during a flush event.
-                $this->decodedValues[$oid][$refProperty->getName()] = [$value, $decryptedValue];
-
-                // We don't want the object to be dirty immediately after reading
-                $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $value);
+                // Tell Doctrine the original value was the decrypted one.
+                $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $decryptedValue);
             }
         }
 
         return !empty($properties);
-    }
-
-    /**
-     * Check if we have entity in decoded registry.
-     *
-     * @param object $entity Some doctrine entity
-     */
-    protected function hasInDecodedRegistry(object $entity): bool
-    {
-        return isset($this->decodedRegistry[spl_object_id($entity)]);
-    }
-
-    /**
-     * Adds entity to decoded registry.
-     *
-     * @param object $entity Some doctrine entity
-     */
-    protected function addToDecodedRegistry(object $entity): void
-    {
-        $this->decodedRegistry[spl_object_id($entity)] = true;
     }
 
     /**

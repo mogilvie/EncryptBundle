@@ -27,12 +27,6 @@ interface DoctrineEncryptSubscriberInterface
     public function onFlush(OnFlushEventArgs $args): void;
 
     /**
-     * After we have persisted the entities, we want to have the
-     * decrypted information available once more.
-     */
-    public function postFlush(PostFlushEventArgs $args): void;
-
-    /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
      * which have @Encrypted annotations.
      */
