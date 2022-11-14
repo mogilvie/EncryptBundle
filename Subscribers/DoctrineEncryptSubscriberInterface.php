@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
+use Psr\Log\LoggerInterface;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 
@@ -16,7 +17,13 @@ interface DoctrineEncryptSubscriberInterface
 {
     public const ENCRYPTED_SUFFIX = '<ENC>';
 
-    public function __construct(Reader $annReader, EncryptorInterface $encryptor, array $annotationArray, bool $isDisabled);
+    public function __construct(
+        LoggerInterface $logger,
+        Reader $annReader,
+        EncryptorInterface $encryptor,
+        array $annotationArray,
+        bool $isDisabled
+    );
 
     /**
      * Encrypt the password before it is written to the database.

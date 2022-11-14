@@ -10,10 +10,12 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use Doctrine\ORM\Events;
+use Psr\Log\LoggerInterface;
 use ReflectionProperty;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
@@ -30,16 +32,6 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      * The default and initial is the bundle Encrypted Class.
      */
     protected array $annotationArray;
-
-    /**
-     * Encryptor.
-     */
-    protected EncryptorInterface $encryptor;
-
-    /**
-     * Annotation reader.
-     */
-    protected Reader $annReader;
 
     /**
      * Registr to avoid multi decode operations for one entity.
@@ -67,10 +59,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
     private bool $isDisabled;
 
-    public function __construct(Reader $annReader, EncryptorInterface $encryptor, array $annotationArray, bool $isDisabled)
+    public function __construct(
+        private LoggerInterface $logger,
+        private Reader $annReader,
+        private EncryptorInterface $encryptor,
+        array $annotationArray,
+        bool $isDisabled
+    )
     {
-        $this->annReader = $annReader;
-        $this->encryptor = $encryptor;
         $this->annotationArray = $annotationArray;
         $this->isDisabled = $isDisabled;
     }
@@ -338,12 +334,34 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $encryptedFields = [];
 
+        // Step through each property in the reflection class.
         foreach ($meta->getReflectionProperties() as $refProperty) {
+
+            // If the property contains an attribute class which is one of the defined Encrypt classes, then add the property
+            // to the array of encrypted fields.
+            foreach($refProperty->getAttributes() as $attribute) {
+                if (in_array($attribute->getName(), $this->annotationArray)) {
+                    $refProperty->setAccessible(true);
+                    $encryptedFields[] = $refProperty;
+
+                    // If an attribute is found then continue top loop. No need to search annotations in this property.
+                    continue 2;
+                }
+            }
+
+            // Otherwise, check for any legacy attribute properties.
             /** @var ReflectionProperty $refProperty */
             foreach ($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
                 if (in_array(get_class($annotation), $this->annotationArray)) {
                     $refProperty->setAccessible(true);
                     $encryptedFields[] = $refProperty;
+                    
+                    // Raise a log entry noting the deprecation.
+                    $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in class %s %s is deprectated.
+                    Please use #[Encrypted] attribute instead.',
+                        $className,
+                        $refProperty
+                    ));
                 }
             }
         }

@@ -1,5 +1,8 @@
 #Change Log
 
+## 3.0.2 (2022-11-xx) Update
+Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.
+
 ## 3.0.1 (2022-03-13) Symfony 6 and PHP 8
 Major backward compatibility breaking change to Symfony 6 and PHP 8.
 

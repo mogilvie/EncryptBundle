@@ -120,7 +120,7 @@ You can pass the class name of your own encyptor service using the optional encr
 You can extend the EncryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
 to point the bundle at your custom subscriber.
 
-If you want to define your own annotation, then this can be used to trigger encryption by adding the annotation 
+If you want to define your own annotation/attribute, then this can be used to trigger encryption by adding the annotation 
 class name to the 'annotation_classes' option array.
 
 ### Alternative EncryptKeyEvent
@@ -136,30 +136,36 @@ Add the Annotation entity to the declared classes in the entity.
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 ```
 
-Add the annotation '@Encrypted' to the parameters that you want encrypted.
+Add the attribute #[Encrypted] to the properties you want encrypted.
+
+Note that the legacy annotation '@Encrypted' in the parameters is deprecated and
+will be discontinued in the next major update.
 ```php
 <?php
 
     /**
      * A PPS number is always 7 numbers followed by either one or two letters.
      * 
-     * @Encrypted
      * @ORM\Column(type="string")
      */
+    #[Encrypted]
     protected string $taxNumber;
     
     /**
      * True if the user is self employed.
      * 
-     * @Encrypted
      * @ORM\Column(type="string", nullable=true)
      */
+    #[Encrypted]
     protected ?bool $isSelfEmployed;
     
     /**
      * Date of birth
      * 
      * @Encrypted
+     * Note that the above Encrypted property is a legacy annotation, and while
+     * it still is supported, it will be deprecated in favour of Attributes .
+     * 
      * @ORM\Column(type="string", nullable=true)
      */
     protected ?String $dob;
