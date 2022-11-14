@@ -10,11 +10,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * CLI command to generate a 256-bit encryption key.
  */
+#[AsCommand(name: 'encrypt:genkey')]
 class GenKeyCommand extends Command
 {
-    // the name of the command (the part after "bin/console")
-    protected static $defaultName = 'encrypt:genkey';
-
     protected function configure(): void
     {
         $this->setDescription('Generate a 256-bit encryption key.');
