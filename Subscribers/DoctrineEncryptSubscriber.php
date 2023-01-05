@@ -47,6 +47,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
     private bool $isDisabled;
 
+    private array $rawValues = [];
+
     public function __construct(Reader $annReader, EncryptorInterface $encryptor, array $annotationArray, bool $isDisabled)
     {
         $this->annReader = $annReader;
@@ -82,6 +84,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     {
         return [
             Events::postLoad,
+            Events::postUpdate,
             Events::onFlush,
         ];
     }
@@ -99,11 +102,11 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $unitOfWork = $em->getUnitOfWork();
 
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
-            $this->processFields($entity, $em, true);
+            $this->processFields($entity, $em, true, true);
         }
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            $this->processFields($entity, $em, true);
+            $this->processFields($entity, $em, true, false);
         }
     }
 
@@ -117,7 +120,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     {
         $entity = $args->getEntity();
         // Decrypt the entity fields.
-        $this->processFields($entity, $args->getEntityManager(), false);
+        $this->processFields($entity, $args->getEntityManager(), false, false);
     }
 
     /**
@@ -152,7 +155,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     /**
      * Process (encrypt/decrypt) entities fields.
      */
-    protected function processFields(object $entity, EntityManagerInterface $em, ?bool $isEncryptOperation = true): bool
+    protected function processFields(object $entity, EntityManagerInterface $em, bool $isEncryptOperation, bool $isInsert): bool
     {
         // Get the encrypted properties in the entity.
         $properties = $this->getEncryptedFields($entity, $em);
@@ -188,8 +191,14 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                     $encryptedValue = $this->encryptor->encrypt($value);
                     $refProperty->setValue($entity, $encryptedValue);
                     $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
-                    // Restore the decrypted value after the change set update
-                    $refProperty->setValue($entity, $value);
+
+                    if ($isInsert) {
+                        // Restore the decrypted value after the change set update
+                        $refProperty->setValue($entity, $value);
+                    } else {
+                        // Will be restored during postUpdate cycle
+                        $this->rawValues[$oid][$refProperty->getName()] = $value;
+                    }
                 }
             } else {
                 // Decryption is fired by onLoad and postFlush events.
@@ -202,6 +211,24 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         }
 
         return !empty($properties);
+    }
+
+    public function postUpdate(LifecycleEventArgs $args): void
+    {
+        $entity = $args->getObject();
+        $em = $args->getObjectManager();
+
+        $oid = spl_object_id($entity);
+        if (isset($this->rawValues[$oid])) {
+            $className = get_class($entity);
+            $meta = $em->getClassMetadata($className);
+            foreach ($this->rawValues[$oid] as $prop => $rawValue) {
+                $refProperty = $meta->getReflectionProperty($prop);
+                $refProperty->setValue($entity, $rawValue);
+            }
+
+            unset($this->rawValues[$oid]);
+        }
     }
 
     /**
