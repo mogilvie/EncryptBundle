@@ -3,7 +3,7 @@
 namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Common\Annotations\Reader;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Psr\Log\LoggerInterface;
