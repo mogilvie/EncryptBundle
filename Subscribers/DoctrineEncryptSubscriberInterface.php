@@ -3,6 +3,7 @@
 namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -37,7 +38,7 @@ interface DoctrineEncryptSubscriberInterface
      * After we have persisted the entities, we want to have the
      * decrypted information available once more.
      */
-    public function postUpdate(PostFlushEventArgs $args): void;
+    public function postUpdate(LifecycleEventArgs $args): void;
 
     /**
      * Listen a postLoad lifecycle event. Checking and decrypt entities
