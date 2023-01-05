@@ -12,30 +12,15 @@ use Doctrine\Common\Annotations\Reader;
 
 class EncryptDatabaseCommand extends Command
 {
-    protected static $defaultName = 'app:encrypt-database';
+    protected static $defaultName = 'encrypt:database:encode';
 
-    /**
-     * @var EncryptorInterface
-     */
-    private $encryptor;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var Reader
-     */
-    private $annotationReader;
-
-    public function __construct(Reader $annotationReader, EncryptorInterface $encryptor, EntityManagerInterface $entityManager)
+    public function __construct(
+        private Reader $annotationReader,
+        private EncryptorInterface $encryptor,
+        private EntityManagerInterface $entityManager
+    )
     {
         parent::__construct();
-
-        $this->encryptor = $encryptor;
-        $this->entityManager = $entityManager;
-        $this->annotationReader = $annotationReader;
     }
 
     protected function configure()
