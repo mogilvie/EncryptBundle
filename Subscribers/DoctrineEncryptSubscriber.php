@@ -34,7 +34,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     protected array $annotationArray;
 
     /**
-     * Registr to avoid multi decode operations for one entity.
+     * Register to avoid multi decode operations for one entity.
      */
     private array $decodedRegistry = [];
 
@@ -112,7 +112,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
             return;
         }
 
-        $em = $args->getEntityManager();
+        $em = $args->getObjectManager();
         $unitOfWork = $em->getUnitOfWork();
 
         $this->postFlushDecryptQueue = [];
@@ -137,16 +137,13 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     protected function entityOnFlush($entity, EntityManagerInterface $em): void
     {
-        // If encryption is disabled return void.
         if ($this->isDisabled) {
             return;
         }
 
         // Add the entity to a decrypt Queue for postFlush decryption.
         $this->postFlushDecryptQueue[] = $entity;
-
-        // Encrypt entity fields.
-        $this->processFields($entity, $em, true);
+        $this->processFields($entity, $em);
     }
 
     /**
@@ -181,8 +178,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
      */
     public function postLoad(LifecycleEventArgs $args): void
     {
-        $entity = $args->getEntity();
-        $em = $args->getEntityManager();
+        $entity = $args->getObject();
+        $em = $args->getObjectManager();
 
         // If this entity has already been decoded in an earlier postFlush event then do nothing.
         if ($this->hasInDecodedRegistry($entity)) {
@@ -190,7 +187,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         }
 
         // Decrypt the entity fields.
-        $hasFieldsEncrypted = $this->processFields($entity, $args->getEntityManager(), false);
+        $hasFieldsEncrypted = $this->processFields($entity, $em, false);
 
         // If the entity contained encrypted fields that were decrypted then add to a registry.
         if ($hasFieldsEncrypted) {
@@ -215,12 +212,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
         $encryptedFields = [];
 
         foreach ($allProperties as $refProperty) {
-            /** @var ReflectionProperty $refProperty */
-            foreach ($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
-                if (in_array(get_class($annotation), $this->annotationArray)) {
-                    $refProperty->setAccessible(true);
-                    $encryptedFields[] = $refProperty;
-                }
+            if ($this->isEncryptedProperty($refProperty)) {
+                $encryptedFields[] = $refProperty;
             }
         }
 
@@ -334,40 +327,37 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $encryptedFields = [];
 
-        // Step through each property in the reflection class.
         foreach ($meta->getReflectionProperties() as $refProperty) {
-
-            // If the property contains an attribute class which is one of the defined Encrypt classes, then add the property
-            // to the array of encrypted fields.
-            foreach($refProperty->getAttributes() as $attribute) {
-                if (in_array($attribute->getName(), $this->annotationArray)) {
-                    $refProperty->setAccessible(true);
-                    $encryptedFields[] = $refProperty;
-
-                    // If an attribute is found then continue top loop. No need to search annotations in this property.
-                    continue 2;
-                }
-            }
-
-            // Otherwise, check for any legacy attribute properties.
-            /** @var ReflectionProperty $refProperty */
-            foreach ($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
-                if (in_array(get_class($annotation), $this->annotationArray)) {
-                    $refProperty->setAccessible(true);
-                    $encryptedFields[] = $refProperty;
-                    
-                    // Raise a log entry noting the deprecation.
-                    $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in class %s %s is deprectated.
-                    Please use #[Encrypted] attribute instead.',
-                        $className,
-                        $refProperty
-                    ));
-                }
+            if ($this->isEncryptedProperty($refProperty)) {
+                $encryptedFields[] = $refProperty;
             }
         }
 
         $this->encryptedFieldCache[$className] = $encryptedFields;
 
         return $encryptedFields;
+    }
+
+    private function isEncryptedProperty(ReflectionProperty $refProperty)
+    {
+        foreach ($refProperty->getAttributes() as $refAttribute) {
+            if (in_array($refAttribute->getName(), $this->annotationArray)) {
+                return true;
+            }
+        }
+
+        foreach ($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
+            if (in_array(get_class($annotation), $this->annotationArray)) {
+                $refProperty->setAccessible(true);
+
+                $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in property %s is deprectated.
+                    Please use #[Encrypted] attribute instead.',
+                    $refProperty
+                ));
+                return true;
+            }
+        }
+
+        return false;
     }
 }
