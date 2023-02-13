@@ -177,7 +177,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 $changeSet = $unitOfWork->getEntityChangeSet($entity);
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
-                if (isset($changeSet[$refProperty->getName()])) {
+                if (isset($changeSet[$key])) {
                     $encryptedValue = $this->encryptor->encrypt($value);
                     $refProperty->setValue($entity, $encryptedValue);
                     $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
@@ -187,7 +187,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                         $refProperty->setValue($entity, $value);
                     } else {
                         // Will be restored during postUpdate cycle
-                        $this->rawValues[$oid][$refProperty->getName()] = $value;
+                        $this->rawValues[$oid][$key] = $value;
                     }
                 }
             } else {
@@ -196,7 +196,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 $refProperty->setValue($entity, $decryptedValue);
 
                 // Tell Doctrine the original value was the decrypted one.
-                $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $decryptedValue);
+                $unitOfWork->setOriginalEntityProperty($oid, $key, $decryptedValue);
             }
         }
 
@@ -222,7 +222,7 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     }
 
     /**
-     * @return ReflectionProperty[]
+     * @return array<string, ReflectionProperty>
      */
     protected function getEncryptedFields(object $entity, EntityManagerInterface $em): array
     {
@@ -236,9 +236,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
 
         $encryptedFields = [];
 
-        foreach ($meta->getReflectionProperties() as $refProperty) {
+        foreach ($meta->getReflectionProperties() as $key => $refProperty) {
             if ($this->isEncryptedProperty($refProperty)) {
-                $encryptedFields[] = $refProperty;
+                $encryptedFields[$key] = $refProperty;
             }
         }
 
