@@ -11,20 +11,20 @@ services:
         public: false
 
     # Subscriber Interface, default is DoctrineEncryptSubscriber but it can be overriden in the app config
-    SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface:
-        class: '%spec_shaper_encrypt.subscriber_class%'
-        arguments:
-            $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
-            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
+#    SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface:
+#        class: '%spec_shaper_encrypt.subscriber_class%'
+#        arguments:
+#            $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
+#            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
+#        tags:
+#            - { name: doctrine.event_subscriber, connection: default }
 
     # Subscriber to catch any encrypt or decrypt events thrown
-    SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber:
-        arguments:
-            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
-        tags:
-            - { name: kernel.event_subscriber, connection: default }
+#    SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber:
+#        arguments:
+#            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
+#        tags:
+#            - { name: kernel.event_subscriber, connection: default }
 
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:
@@ -43,11 +43,10 @@ services:
         tags: ['twig.extension']
 
     # CLI command to decrypt all fields in a database
-    SpecShaper\EncryptBundle\Command\DecryptCommand:
-        calls:
-            - method: setSubscriber
-        arguments:
-            - '@SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface'
+    SpecShaper\EncryptBundle\Command\DecryptDatabaseCommand:
+
+    # CLI command to decrypt all fields in a database
+    SpecShaper\EncryptBundle\Command\EncryptDatabaseCommand:
     
     # CLI command to generate a 256 bit encryption key
     SpecShaper\EncryptBundle\Command\GenKeyCommand:

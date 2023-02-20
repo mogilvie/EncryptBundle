@@ -2,6 +2,8 @@
 
 namespace SpecShaper\EncryptBundle\Command;
 
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -10,30 +12,47 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Annotations\Reader;
 
-class EncryptDatabaseCommand extends Command
+#[AsCommand(
+    name: 'encrypt:database:decrypt',
+    description: 'Decrypts the database'
+)]
+class DecryptDatabaseCommand extends Command
 {
-    protected static $defaultName = 'encrypt:database:encode';
+
+    private ?EntityManagerInterface $em;
 
     public function __construct(
-        private Reader $annotationReader,
-        private EncryptorInterface $encryptor,
-        private EntityManagerInterface $entityManager
+        private readonly Reader $annotationReader,
+        private readonly EncryptorInterface $encryptor,
+        private readonly ManagerRegistry $registry
     )
     {
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this
-            ->setDescription('Encrypts the database')
-            ->setHelp('This command encrypt the database');
+        $this->addOption('manager_name', null,null,'Nominate the database connection manager name.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+
+        $managerName = $this->registry->getDefaultManagerName();
+
+        $managerNameOption = $input->getOption('manager_name');
+
+        if(!empty($managerNameOption)) {
+            $managerName = $managerNameOption;
+        }
+
+        dump($managerName);
+
+
+        $this->em = $this->registry->getManager($managerName);
+
         $output->writeln([
-            'Encrypting the database',
+            'Decrypting the database',
             '======================',
             '',
         ]);
@@ -46,11 +65,11 @@ class EncryptDatabaseCommand extends Command
     private function processAllEntities()
     {
         // Get all entities
-        $meta = $this->entityManager->getMetadataFactory()->getAllMetadata();
+        $meta =  $this->em->getMetadataFactory()->getAllMetadata();
 
         // Loop through entities
         foreach ($meta as $m) {
-            $repository = $this->entityManager->getRepository($m->getName());
+            $repository =  $this->em->getRepository($m->getName());
             $rows = $repository->findAll();
 
             foreach ($rows as $row) {
@@ -58,12 +77,12 @@ class EncryptDatabaseCommand extends Command
                 $hasFieldsEncrypted = $this->processFields($row);
 
                 if ($hasFieldsEncrypted) {
-                    $this->entityManager->persist($row);
+                    $this->em->persist($row);
                 }
             }
         }
 
-        $this->entityManager->flush();
+        $this->em->flush();
     }
 
     /**
@@ -72,11 +91,11 @@ class EncryptDatabaseCommand extends Command
     private function getEncryptedFields($entity): array
     {
         $className = get_class($entity);
-        $meta = $this->entityManager->getClassMetadata($className);
+        $meta =  $this->em->getClassMetadata($className);
 
         $encryptedFields = [];
 
-        foreach ($meta->getReflectionProperties() as $refProperty) {
+        foreach ($meta->getReflectionProperties() as $propertyName => $refProperty) {
             /** @var \ReflectionProperty $refProperty */
 
             $propertyAnnotations = array_map(function ($annotation) {
@@ -84,7 +103,7 @@ class EncryptDatabaseCommand extends Command
             }, $this->annotationReader->getPropertyAnnotations($refProperty));
 
             if (in_array(\SpecShaper\EncryptBundle\Annotations\Encrypted::class, $propertyAnnotations)) {
-                $encryptedFields[] = $refProperty;
+                $encryptedFields[$propertyName] = $refProperty;
             }
         }
 
@@ -104,10 +123,10 @@ class EncryptDatabaseCommand extends Command
             return false;
         }
 
-        $unitOfWork = $this->entityManager->getUnitOfWork();
+        $unitOfWork =  $this->em->getUnitOfWork();
         $oid = spl_object_id($entity);
 
-        foreach ($properties as $key => $refProperty) {
+        foreach ($properties as $propertyName => $refProperty) {
 
             // Get the value in the entity.
             $value = $refProperty->getValue($entity);
@@ -118,23 +137,23 @@ class EncryptDatabaseCommand extends Command
             }
 
             if (is_object($value)) {
-                throw new EncryptException('Cannot encrypt an object at ' . $refProperty->class . ':' . $refProperty->getName(), $value);
+                throw new EncryptException('Cannot decrypt an object at ' . $refProperty->class . ':' . $propertyName, $value);
             }
 
             // If the field has already been decrypted by the onLoad event, and the flushed value is the same
-            if (isset($this->decodedValues[$oid][$refProperty->getName()]) && $this->decodedValues[$oid][$refProperty->getName()][1] === $value) {
+            if (isset($this->decodedValues[$oid][$propertyName]) && $this->decodedValues[$oid][$propertyName][1] === $value) {
 
                 // Remove the field from the UoW change set.
-                unset($unitOfWork->getEntityChangeSet($entity)[$refProperty->getName()]);
+                unset($unitOfWork->getEntityChangeSet($entity)[$propertyName]);
 
                 // Get the originally created encrypted value.
-                $encryptedValue = $this->decodedValues[$oid][$refProperty->getName()][0];
+                $encryptedValue = $this->decodedValues[$oid][$propertyName][0];
 
                 // Reset that to the original in the UoW.
-                $unitOfWork->setOriginalEntityProperty($oid, $refProperty->getName(), $encryptedValue);
+                $unitOfWork->setOriginalEntityProperty($oid, $propertyName, $encryptedValue);
             } else {
                 // The field is part of an insert or the value of the field has changed, then create a new encrypted value.
-                $encryptedValue = $this->encryptor->encrypt($value);
+                $encryptedValue = $this->encryptor->decrypt($value);
             }
 
             // Replace the unencrypted value with the encrypted value on the entity.

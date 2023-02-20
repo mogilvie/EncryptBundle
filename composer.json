@@ -1,14 +1,14 @@
 {
     "name" : "specshaper/encrypt-bundle",
     "type" : "symfony-bundle",
-    "description" : "Bundle provides a service for encoding via annotation.",
+    "description" : "Bundle provides a service for encrypting values via attribute.",
     "homepage": "https://github.com/mogilvie/EncryptBundle",
     "authors" : [{
         "name" : "Mark Ogilvie",
         "email" : "mark.ogilvie@ogilvieconsulting.net"
     }],
     "keywords" : [
-        "encoder bundle"
+        "encrypt bundle"
     ],
     "license" : [
         "MIT"
@@ -20,16 +20,20 @@
         "doctrine/annotations": "^1.8|^2.0",
         "doctrine/orm": "^2.11",
         "doctrine/doctrine-bundle": "^2.5",
-        "symfony/monolog-bundle": "^3.7"
+        "symfony/monolog-bundle": "^3.7",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0"
     },
-    "autoload" : {
-        "psr-4": { "SpecShaper\\EncryptBundle\\": "" }
+    "autoload": {
+        "psr-4": {
+            "SpecShaper\\EncryptBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SpecShaper\\EncryptBundle\\Tests\\": "tests/"
+        }
     }
 }
-
-
-
-

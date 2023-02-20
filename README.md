@@ -9,9 +9,6 @@ Features include:
 - Uses OpenSSL
 - Uses Lifecycle events
 
-**Warning**
-- This bundle has not been unit tested.
-
 Features road map:
 
 - [x] Create a factory method to expand for different encryptors

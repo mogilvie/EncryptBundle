@@ -2,6 +2,7 @@
 
 namespace SpecShaper\EncryptBundle\Subscribers;
 
+use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,11 +15,10 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
 use Psr\Log\LoggerInterface;
 
-
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
  */
-class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubscriberInterface
+class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEncryptSubscriberInterface
 {
     /**
      * Encryptor interface namespace.
@@ -42,9 +42,9 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
     private bool $isDisabled;
 
     public function __construct(
-        private LoggerInterface $logger,
-        private Reader $annReader,
-        private EncryptorInterface $encryptor,
+        private readonly LoggerInterface $logger,
+        private readonly Reader $annReader,
+        private readonly EncryptorInterface $encryptor,
         array $annotationArray,
         bool $isDisabled
     ) {
@@ -194,6 +194,8 @@ class DoctrineEncryptSubscriber implements EventSubscriber, DoctrineEncryptSubsc
                 // Decryption is fired by onLoad and postFlush events.
                 $decryptedValue = $this->decryptValue($value);
                 $refProperty->setValue($entity, $decryptedValue);
+
+                dump($value);
 
                 // Tell Doctrine the original value was the decrypted one.
                 $unitOfWork->setOriginalEntityProperty($oid, $key, $decryptedValue);
