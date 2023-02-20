@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SpecShaper\EncryptBundle;
 
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
+use SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -28,6 +29,7 @@ class SpecShaperEncryptBundle extends AbstractBundle
                 ->scalarNode('encrypt_key')->end()
                 ->scalarNode('method')->defaultValue('OpenSSL')->end()
                 ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                ->scalarNode('encryptor_class')->defaultValue(OpenSslEncryptor::class)->end()
                 ->scalarNode('is_disabled')->defaultValue(false)->end()
                 ->arrayNode('connections')
                     ->treatNullLike([])
@@ -60,6 +62,7 @@ class SpecShaperEncryptBundle extends AbstractBundle
         $container->parameters()->set($this->extensionAlias.'.encrypt_key', $encryptKey);
         $container->parameters()->set($this->extensionAlias.'.method', $config['method']);
         $container->parameters()->set($this->extensionAlias.'.subscriber_class', $config['subscriber_class']);
+        $container->parameters()->set($this->extensionAlias.'.encryptor_class', $config['encryptor_class']);
         $container->parameters()->set($this->extensionAlias.'.annotation_classes', $config['annotation_classes']);
         $container->parameters()->set($this->extensionAlias.'.is_disabled', $config['is_disabled']);
 

@@ -8,12 +8,13 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 interface EncryptorInterface
 {
     public function setSecretKey(string $key): void;
+
     /**
      * Must accept data and return encrypted data.
      *
-     * @param string $data Unencrypted string
+     * @param string|null $data Unencrypted string
      *
-     * @return string Encrypted string
+     * @return string|null Encrypted string
      */
     public function encrypt(?string $data): ?string;
 

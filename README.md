@@ -5,7 +5,7 @@ A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrin
 Features include:
 - V3 is Symfony 5.4|6 PHP 8
 - V2 is Symfony 5.
-- v1 is Symfony 3.4 and not active any more.
+- v1 is Symfony 3.4 and not active anymore.
 - Uses OpenSSL
 - Uses Lifecycle events
 
@@ -87,38 +87,35 @@ $ bin/console encrypt:genkey
 Copy the key into your .env file.
 ```
 ###> encrypt-bundle ###
-ENCRYPT_KEY=<YOUR KEY HERE>
+ENCRYPT_KEY= change_me!
 ###< encrypt-bundle ###
 ```
 
-And resolve in your parameters file.
+And resolve in your packages yaml file.
 ```yaml
-// app/config/parameters.yml
-    ...
-    encrypt_key: '%env(resolve:ENCRYPT_KEY)%'
+# app/config/packages/spec_shaper_encrypt.yaml
+spec_shaper_encrypt:
+  encrypt_key: '%env(ENCRYPT_KEY)%'
+  is_disabled: false # Turn this to true to disable the encryption.
+  connections:   # Optional, define the connection name(s) for the subscriber to listen to.
+    - 'default'
+    - 'tenant'
+  subscriber_class: App\Subscriber\MyCustomSubscriber # Optional to override the bundle Doctrine event subscriber.
+  encryptor_class: App\Encryptors\MyCustomEncryptor # Optional to override the bundle OpenSslEncryptor.
+  annotation_classes: # Optional to override the default annotation/Attribute object.
+    - App\Annotation\MyAttribute
 ```
 
-A config file entry is not required, however there are some options that
-can be configured to extend the bundle.
-
-```yaml
-# The encryptor service created by the factory according to the passed method and using the encrypt_key
-SpecShaper\EncryptBundle\Encryptors\EncryptorInterface:
-  factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
-  arguments:
-    $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
-    $encryptorClass: '%spec_shaper_encrypt.encryptor_class%' #optional
-```
 You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
 contain the \<ENC> suffix.
-
-You can pass the class name of your own encyptor service using the optional encryptorClass option.
 
 You can extend the EncryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
 to point the bundle at your custom subscriber.
 
 If you want to define your own annotation/attribute, then this can be used to trigger encryption by adding the annotation 
 class name to the 'annotation_classes' option array.
+
+You can pass the class name of your own encyptor service using the optional encryptorClass option.
 
 ### Alternative EncryptKeyEvent
 The EncryptKey can be set via a dispatched event listener, which overrides any .env or param.yml defined key.
@@ -161,7 +158,7 @@ will be discontinued in the next major update.
      * 
      * @Encrypted
      * Note that the above Encrypted property is a legacy annotation, and while
-     * it still is supported, it will be deprecated in favour of Attributes .
+     * it still is supported, it will be deprecated in favour of Attributes.
      * 
      * @ORM\Column(type="string", nullable=true)
      */
