@@ -195,8 +195,6 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 $decryptedValue = $this->decryptValue($value);
                 $refProperty->setValue($entity, $decryptedValue);
 
-                dump($value);
-
                 // Tell Doctrine the original value was the decrypted one.
                 $unitOfWork->setOriginalEntityProperty($oid, $key, $decryptedValue);
             }
@@ -251,9 +249,12 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
     private function isEncryptedProperty(ReflectionProperty $refProperty)
     {
-        foreach ($refProperty->getAttributes() as $refAttribute) {
-            if (in_array($refAttribute->getName(), $this->annotationArray)) {
-                return true;
+        // If PHP8, and has attributes.
+        if(method_exists($refProperty, 'getAttributes')) {
+            foreach ($refProperty->getAttributes() as $refAttribute) {
+                if (in_array($refAttribute->getName(), $this->annotationArray)) {
+                    return true;
+                }
             }
         }
 

@@ -42,12 +42,11 @@ services:
     SpecShaper\EncryptBundle\Twig\EncryptExtension:
         tags: ['twig.extension']
 
-    # CLI command to decrypt all fields in a database
-    SpecShaper\EncryptBundle\Command\DecryptDatabaseCommand:
-
-    # CLI command to decrypt all fields in a database
+    # CLI command to encrypt or decrypt all fields in a database
     SpecShaper\EncryptBundle\Command\EncryptDatabaseCommand:
-    
+        arguments:
+            $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
+
     # CLI command to generate a 256 bit encryption key
     SpecShaper\EncryptBundle\Command\GenKeyCommand:
         tags:
