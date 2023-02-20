@@ -14,7 +14,7 @@ Features road map:
 - [x] Create a factory method to expand for different encryptors
 - [x] Create a twig function to decrypt encoded values
 - [x] Expand parameters to allow selection of encoding method
-- [ ] Create CLI commands to encrypt and decrypt the entire database
+- [x] Create CLI commands to encrypt and decrypt the entire database
 - [ ] Handle DateTime data types via the bundle.
 
 ## License
@@ -42,7 +42,7 @@ and following some steps.
 ## Step 1: Download the bundle
 
 Open a command console, enter your project directory and execute the
-following command to download the latest version of this bundle:
+following command to download the latest development version of this bundle:
 
 ```
 $ composer require specshaper/encrypt-bundle dev-master
@@ -54,31 +54,24 @@ of the Composer documentation.
 
 ## Step 2: Enable the bundle
 
+Maker will update your app kernal, but if required you can do it.
+
 Then, enable the bundle by adding it to the list of registered bundles
-in the `app/AppKernel.php` file of your project:
+in the `config/bundles.php` file of your project:
 
 ```php
 <?php
-// app/AppKernel.php
 
-// ...
-class AppKernel extends Kernel
-{
-    public function registerBundles()
-    {
-        $bundles = array(
-            // ...
-            new SpecShaper\EncryptBundle\SpecShaperEncryptBundle(),
-        );
-        // ...
-    }
-    // ...
-}
+return [
+    ...
+    SpecShaper\EncryptBundle\SpecShaperEncryptBundle::class => ['all' => true],
+];
+
 ```
 
 ## Step 2: Configure the bundle
 
-Generate a 256 bit key using the command provided in the bundle.
+Generate a 256-bit key using the command provided in the bundle.
 
 ```
 $ bin/console encrypt:genkey
@@ -91,7 +84,8 @@ ENCRYPT_KEY= change_me!
 ###< encrypt-bundle ###
 ```
 
-And resolve in your packages yaml file.
+Maker will have created a packages yaml file. The key is resolved in there.
+
 ```yaml
 # app/config/packages/spec_shaper_encrypt.yaml
 spec_shaper_encrypt:
