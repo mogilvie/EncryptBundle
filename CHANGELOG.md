@@ -1,6 +1,6 @@
 #Change Log
 
-## 3.0.2 (2022-11-xx) Update
+## 3.1.0 (2023-02-22) Update
 Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.
 Add option to catch doctrine events from multiple connections.
 Add encrypt and decrypt CLI commands.
