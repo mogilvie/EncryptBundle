@@ -25,7 +25,7 @@ This bundle is under the MIT license. See the complete license in the bundle:
 
 ## About
 
-EncryptBundle has been written for the [SpecShaper](http://about.specshaper.com) and [Parolla](https://www.parolla.ie) websites
+EncryptBundle has been written for the [Parolla Plugins](https://plugins.parolla.ie) and [Parolla](https://www.parolla.ie) websites
 to encode users private data. The bundle is expanded in a larger [gdpr-bundle](https://github.com/mogilvie/GdprBundle).
 
 ## Reporting an issue or a feature request
@@ -39,7 +39,7 @@ and following some steps.
 
 # Installation
 
-## Step 1: Download the bundle
+## Step 1: Install from package
 
 Open a command console, enter your project directory and execute the
 following command to download the latest development version of this bundle:
@@ -54,9 +54,9 @@ of the Composer documentation.
 
 ## Step 2: Enable the bundle
 
-Maker will update your app kernal, but if required you can do it.
+The receipe will create a package config file under config/packages/spec_shaper_encrypt.yaml.
 
-Then, enable the bundle by adding it to the list of registered bundles
+If required, enable the bundle by adding it to the list of registered bundles
 in the `config/bundles.php` file of your project:
 
 ```php
@@ -80,7 +80,7 @@ $ bin/console encrypt:genkey
 Copy the key into your .env file.
 ```
 ###> encrypt-bundle ###
-ENCRYPT_KEY= change_me!
+SPEC_SHAPER_ENCRYPT_KEY= change_me!
 ###< encrypt-bundle ###
 ```
 
@@ -89,7 +89,7 @@ Maker will have created a packages yaml file. The key is resolved in there.
 ```yaml
 # app/config/packages/spec_shaper_encrypt.yaml
 spec_shaper_encrypt:
-  encrypt_key: '%env(ENCRYPT_KEY)%'
+  encrypt_key: '%env(SPEC_SHAPER_ENCRYPT_KEY)%'
   is_disabled: false # Turn this to true to disable the encryption.
   connections:   # Optional, define the connection name(s) for the subscriber to listen to.
     - 'default'
@@ -116,7 +116,7 @@ The EncryptKey can be set via a dispatched event listener, which overrides any .
 Create a listener for the EncryptKeyEvents::LOAD_KEY event and set your encryption key at that point.
 
 ## Step 3: Create the entities
-Add the Annotation entity to the declared classes in the entity.
+Add the Encrypted attribute class within the entity.
 
 ```php
 <?php
@@ -278,4 +278,19 @@ In this case, use the twig filter to decrypt your value when rendering.
 {{ employee.bankAccountNumber | decrypt }}
 ```
 
+# Commands
+
+You have already seen the command to generate a encryption key:
+```
+$ bin/console encrypt:genkey
+```
+
+You can decrypt/encrypt the entire database using the following
+```
+$ bin/console encrypt:database decrypt connection
+```
+
+The requried argument should be be decrypt or encrypt.
+
+There is an option to define the database connection if you employ multiple connections in your application.
 
