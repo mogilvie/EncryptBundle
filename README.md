@@ -269,7 +269,7 @@ Or you can dispatch the EncryptEvent.
 ## Step 5: Decrypt in templates
 
 If you query a repository using a select with an array result 
-then the doctrine onLoad event subscriber will not decyrpt any encrypted
+then the doctrine onLoad event subscriber will not decrypt any encrypted
 values.
 
 In this case, use the twig filter to decrypt your value when rendering.
