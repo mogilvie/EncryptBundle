@@ -158,6 +158,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
         $unitOfWork = $em->getUnitOfWork();
         $oid = spl_object_id($entity);
+        $meta = $em->getClassMetadata(get_class($entity));
 
         foreach ($properties as $key => $refProperty) {
             // Get the value in the entity.
@@ -180,15 +181,10 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 if (isset($changeSet[$key])) {
                     $encryptedValue = $this->encryptor->encrypt($value);
                     $refProperty->setValue($entity, $encryptedValue);
-                    $unitOfWork->recomputeSingleEntityChangeSet($em->getClassMetadata(get_class($entity)), $entity);
+                    $unitOfWork->recomputeSingleEntityChangeSet($meta, $entity);
 
-                    if ($isInsert) {
-                        // Restore the decrypted value after the change set update
-                        $refProperty->setValue($entity, $value);
-                    } else {
-                        // Will be restored during postUpdate cycle
-                        $this->rawValues[$oid][$key] = $value;
-                    }
+                    // Will be restored during postUpdate cycle for updates, or below for inserts
+                    $this->rawValues[$oid][$key] = $value;
                 }
             } else {
                 // Decryption is fired by onLoad and postFlush events.
@@ -200,7 +196,16 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
             }
         }
 
-        return !empty($properties);
+        if ($isInsert) {
+            // Restore the decrypted values after the change set update
+            foreach ($this->rawValues[$oid] as $prop => $rawValue) {
+                $refProperty = $meta->getReflectionProperty($prop);
+                $refProperty->setValue($entity, $rawValue);
+            }
+            unset($this->rawValues[$oid]);
+        }
+
+        return true;
     }
 
     public function postUpdate(LifecycleEventArgs $args): void
