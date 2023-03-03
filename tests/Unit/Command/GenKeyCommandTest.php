@@ -8,7 +8,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class DomBuilderFactoryTest extends TestCase
+class GenKeyCommandTest extends TestCase
 {
     /**
      * Test that an encryption key of 43 characters (ending with =) is created.
