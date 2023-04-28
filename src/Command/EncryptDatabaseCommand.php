@@ -5,7 +5,6 @@ namespace SpecShaper\EncryptBundle\Command;
 use Doctrine\Migrations\Query\Query;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -148,7 +147,8 @@ class EncryptDatabaseCommand extends Command
 
             foreach ($meta->getReflectionProperties() as $key => $refProperty) {
                 if ($this->isEncryptedProperty($refProperty)) {
-                    $this->encryptedFields[$tableName][$key] = $refProperty;
+                    $columnName = $meta->getColumnName($key);
+                    $this->encryptedFields[$tableName][$columnName] = $refProperty;
                 }
             }
         }
@@ -156,7 +156,7 @@ class EncryptDatabaseCommand extends Command
         return $this->encryptedFields;
     }
 
-    private function isEncryptedProperty(RuntimeReflectionProperty $refProperty)
+    private function isEncryptedProperty(\ReflectionProperty $refProperty)
     {
 
         foreach ($refProperty->getAttributes() as $refAttribute) {
