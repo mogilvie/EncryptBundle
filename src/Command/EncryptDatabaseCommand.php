@@ -2,7 +2,6 @@
 
 namespace SpecShaper\EncryptBundle\Command;
 
-use Doctrine\Migrations\Query\Query;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -11,7 +10,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Command\Command;
-use SpecShaper\EncryptBundle\Exception\EncryptException;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Annotations\Reader;
@@ -28,13 +26,11 @@ class EncryptDatabaseCommand extends Command
     
     private array $encryptedFields = [];
 
-    private $plannedSql = [];
-
     public function __construct(
         private readonly Reader $annotationReader,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
-        private array $annotationArray
+        private readonly array $annotationArray
     )
     {
         parent::__construct();
@@ -46,7 +42,7 @@ class EncryptDatabaseCommand extends Command
         $this->addOption('manager', null,InputOption::VALUE_OPTIONAL,'Nominate the database connection manager name.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
 
         $io = new SymfonyStyle($input, $output);
@@ -77,15 +73,13 @@ class EncryptDatabaseCommand extends Command
             $io->progressAdvance();
         }
 
-        $io->progressFinish($tables);
+        $io->progressFinish();
 
         return Command::SUCCESS;
     }
 
-    private function decryptTable(string $tableName, array $fieldArray, string $direction){
-
-        $statement = '';
-
+    private function decryptTable(string $tableName, array $fieldArray, string $direction): void
+    {
         // Get all the field names that have been encrypted as an array.
         $select = array_keys($fieldArray);
 
@@ -97,9 +91,6 @@ class EncryptDatabaseCommand extends Command
         $encryptedEntityFields = $this->em->getConnection()->fetchAllAssociative($selectQuery);
 
         foreach ($encryptedEntityFields as $entity) {
-
-            $sql = 'UPDATE ' . $tableName . ' SET ';
-
             $decryptedFields = [];
             foreach($fieldArray as $fieldName => $refProperty){
 
@@ -109,18 +100,11 @@ class EncryptDatabaseCommand extends Command
                     $newValue = $this->encryptor->decrypt($entity[$fieldName]);
                 }
 
-                $decryptedFields[] = $fieldName . ' = "' . $newValue . '"';
+                $decryptedFields[$fieldName] = $newValue;
             }
 
-            $sql .= implode( ', ', $decryptedFields);
-
-            $sql .= ' WHERE id = ' . $entity['id'] . ';';
-
-            $statement .= $sql;
-
+            $this->em->getConnection()->update($tableName, $decryptedFields, ['id' => $entity['id']]);
         }
-
-        $this->em->getConnection()->executeStatement($statement);
     }
 
     private function getEncryptedFields(): array
@@ -179,13 +163,5 @@ class EncryptDatabaseCommand extends Command
         }
 
         return false;
-    }
-
-    protected function addSql(
-        string $sql,
-        array $params = [],
-        array $types = []
-    ): void {
-        $this->plannedSql[] = new Query($sql, $params, $types);
     }
 }
