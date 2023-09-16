@@ -179,7 +179,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
                 if (isset($changeSet[$key])) {
-                    $value = $type->convertToDatabaseValue($value, $platform);
+                    $value = is_string($value) ? $value : $type->convertToDatabaseValue($value, $platform);
 
                     if (!is_string($value)) {
                         throw new EncryptException('Cannot encrypt value at '.$refProperty->class.':'.$refProperty->getName(), $value);
