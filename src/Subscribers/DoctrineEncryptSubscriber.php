@@ -179,10 +179,10 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
                 if (isset($changeSet[$key])) {
-                    $value = is_string($value) ? $value : $type->convertToDatabaseValue($value, $platform);
+                    $value = is_scalar($value) ? $value : $type->convertToDatabaseValue($value, $platform);
 
-                    if (!is_string($value)) {
-                        throw new EncryptException('Cannot encrypt value at '.$refProperty->class.':'.$refProperty->getName(), $value);
+                    if (!is_scalar($value)) {
+                        throw new EncryptException('Cannot encrypt non-scalar value at '.$refProperty->class.':'.$refProperty->getName(), $value);
                     }
 
                     $encryptedValue = $this->encryptor->encrypt($value);
@@ -193,8 +193,8 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                     $this->rawValues[$oid][$key] = $value;
                 }
             } else {
-                if (!is_string($value)) {
-                    throw new EncryptException('Cannot decrypt value at '.$refProperty->class.':'.$refProperty->getName(), $value);
+                if (!is_scalar($value)) {
+                    throw new EncryptException('Cannot decrypt non-scalar value at '.$refProperty->class.':'.$refProperty->getName(), $value);
                 }
 
                 // Decryption is fired by onLoad and postFlush events.
