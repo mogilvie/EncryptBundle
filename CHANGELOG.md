@@ -6,11 +6,13 @@ Made Twig extension an opt-out in config.
 Check for null encrypted values on insert.
 Fix command for bulk update/changes to the database.
 
+
 ## 3.1.0 (2023-02-22) Update
 Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.
 Add option to catch doctrine events from multiple connections.
 Add encrypt and decrypt CLI commands.
 Refactor for symfony flex and Symfony 6 recommended third party bundle structure
+Restore backward compatablity for 5.4.
 
 ## 3.0.1 (2022-03-13) Symfony 6 and PHP 8
 Major backward compatibility breaking change to Symfony 6 and PHP 8.
