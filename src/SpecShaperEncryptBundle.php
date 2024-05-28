@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SpecShaper\EncryptBundle;
 
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
-use SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor;
+use SpecShaper\EncryptBundle\Encryptors\AecCbcEncryptor;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -29,7 +29,7 @@ class SpecShaperEncryptBundle extends AbstractBundle
                 ->scalarNode('encrypt_key')->end()
                 ->scalarNode('method')->defaultValue('OpenSSL')->end()
                 ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
-                ->scalarNode('encryptor_class')->defaultValue(OpenSslEncryptor::class)->end()
+                ->scalarNode('encryptor_class')->defaultValue(AecCbcEncryptor::class)->end()
                 ->scalarNode('is_disabled')->defaultValue(false)->end()
                 ->arrayNode('connections')
                     ->treatNullLike([])
@@ -59,9 +59,15 @@ class SpecShaperEncryptBundle extends AbstractBundle
 
         if ($builder->hasParameter('encrypt_key')) {
             trigger_deprecation('SpecShaperEncryptBundle', 'v3.0.2', 'storing Specshaper Encrypt Key in parameters is deprecated. Move to Config/Packages/spec_shaper_encrypt.yaml');
+            $encryptKey =  $builder->getParameter('encrypt_key');
+        } else {
+            $encryptKey =  $config['encrypt_key'];
         }
 
-        $encryptKey =  $config['encrypt_key'];
+        if(array_key_exists('subscriber_class', $config)){
+            trigger_deprecation('SpecShaperEncryptBundle', 'v4.0.0', 'DoctrineSubscribers will be deprecated in version 4. If you
+            have a custom subscriber in the encrypt bundle then this will need to be changed to a DoctrineListener.');
+        }
 
         $container->parameters()->set($this->extensionAlias.'.encrypt_key', $encryptKey);
         $container->parameters()->set($this->extensionAlias.'.method', $config['method']);
