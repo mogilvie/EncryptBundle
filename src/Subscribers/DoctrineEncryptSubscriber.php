@@ -149,7 +149,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     protected function processFields(object $entity, EntityManagerInterface $em, bool $isEncryptOperation, bool $isInsert): bool
     {
         // Get the encrypted properties in the entity.
-        $properties = $this->getEncryptedFields($entity, $em);
+        $properties = $this->getEncryptedFields($entity);
 
         // If no encrypted properties, return false.
         if (empty($properties)) {
@@ -232,7 +232,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     /**
      * @return array<string, ReflectionProperty>
      */
-    protected function getEncryptedFields(object $entity, EntityManagerInterface $em): array
+    protected function getEncryptedFields(object $entity): array
     {
         // Create a ReflectionClass instance
         $reflectionClass = new \ReflectionClass($entity);
