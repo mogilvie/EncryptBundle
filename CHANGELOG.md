@@ -4,6 +4,7 @@
 Resolve issue of child classes containing Encrypted values not persisting correctly.
 Made Twig extension an opt-out in config.
 Check for null encrypted values on insert.
+Fix command for bulk update/changes to the database.
 
 ## 3.1.0 (2023-02-22) Update
 Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.
