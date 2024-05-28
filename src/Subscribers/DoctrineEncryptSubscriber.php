@@ -199,12 +199,13 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
             }
         }
 
-        if ($isInsert) {
+        if ($isInsert && isset($this->rawValues[$oid])) {
             // Restore the decrypted values after the change set update
             foreach ($this->rawValues[$oid] as $prop => $rawValue) {
                 $refProperty = $meta->getReflectionProperty($prop);
                 $refProperty->setValue($entity, $rawValue);
             }
+
             unset($this->rawValues[$oid]);
         }
 
