@@ -26,6 +26,14 @@ services:
 #        tags:
 #            - { name: kernel.event_subscriber, connection: default }
 
+#    SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener:
+##        arguments:
+##            $encryptor: '@spec_shaper_encrypt.encryption_service'
+#        tags:
+#            - { name: doctrine.event_listener, event: onFlush }
+#            - { name: doctrine.event_listener, event: postUpdate }
+#            - { name: doctrine.event_listener, event: postLoad }
+
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:
         arguments: ['@event_dispatcher']
@@ -37,10 +45,6 @@ services:
         factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
         arguments:
             $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
-
-    # Encrypt Twig extension that defins the decrypt filter.
-    SpecShaper\EncryptBundle\Twig\EncryptExtension:
-        tags: ['twig.extension']
 
     # CLI command to encrypt or decrypt all fields in a database
     SpecShaper\EncryptBundle\Command\EncryptDatabaseCommand:

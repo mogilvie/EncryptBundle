@@ -6,6 +6,7 @@ namespace SpecShaper\EncryptBundle;
 
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -28,15 +29,13 @@ class SpecShaperEncryptBundle extends AbstractBundle
             ->children()
                 ->scalarNode('encrypt_key')->end()
                 ->scalarNode('method')->defaultValue('OpenSSL')->end()
-                ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+//                ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                ->scalarNode('listener_class')->defaultValue(DoctrineEncryptListener::class)->end()
                 ->scalarNode('encryptor_class')->defaultValue(OpenSslEncryptor::class)->end()
                 ->scalarNode('is_disabled')->defaultValue(false)->end()
                 ->arrayNode('connections')
                     ->treatNullLike([])
                     ->prototype('scalar')->end()
-                    ->defaultValue([
-                        'default',
-                    ])
                 ->end()
                 ->arrayNode('annotation_classes')
                     ->treatNullLike([])
@@ -44,6 +43,10 @@ class SpecShaperEncryptBundle extends AbstractBundle
                     ->defaultValue([
                         Encrypted::class,
                     ])
+                ->end()
+                ->booleanNode('enable_twig')
+                    ->defaultTrue()
+                    ->info('Enable or disable Twig functionality')
                 ->end()
             ->end()
         ;
@@ -61,33 +64,65 @@ class SpecShaperEncryptBundle extends AbstractBundle
 
         $container->parameters()->set($this->extensionAlias.'.encrypt_key', $encryptKey);
         $container->parameters()->set($this->extensionAlias.'.method', $config['method']);
-        $container->parameters()->set($this->extensionAlias.'.subscriber_class', $config['subscriber_class']);
+//        $container->parameters()->set($this->extensionAlias.'.subscriber_class', $config['subscriber_class']);
+        $container->parameters()->set($this->extensionAlias.'.listener_class', $config['listener_class']);
         $container->parameters()->set($this->extensionAlias.'.encryptor_class', $config['encryptor_class']);
         $container->parameters()->set($this->extensionAlias.'.annotation_classes', $config['annotation_classes']);
         $container->parameters()->set($this->extensionAlias.'.is_disabled', $config['is_disabled']);
 
         $services = $container->services();
 
-        $doctrineSubscriber = $services->set($config['subscriber_class'])
-            ->autowire(true)
-            ->arg('$annotationArray', $config['annotation_classes'])
-            ->arg('$isDisabled', $config['is_disabled'])
-        ;
-
         $encryptEventSubscriber = $services->set(EncryptEventSubscriber::class)
             ->autowire(true)
             ->arg('$isDisabled', $config['is_disabled'])
         ;
 
+//        $doctrineSubscriber = $services->set($config['subscriber_class'])
+//            ->autowire(true)
+//            ->arg('$annotationArray', $config['annotation_classes'])
+//            ->arg('$isDisabled', $config['is_disabled'])
+//        ;
+
+        $doctrineListener = $services->set($config['listener_class'])
+            ->autowire(true)
+            ->arg('$annotationArray', $config['annotation_classes'])
+            ->arg('$isDisabled', $config['is_disabled'])
+        ;
+
         foreach($config['connections'] as $connectionName){
-            $doctrineSubscriber->tag('doctrine.event_subscriber', [
+            $doctrineListener->tag('doctrine.event_listener', [
                 'priority' => 500,
                 'connection' => $connectionName,
+                'event' => 'onFlush'
             ]);
+
+            $doctrineListener->tag('doctrine.event_listener', [
+                'priority' => 500,
+                'connection' => $connectionName,
+                'event' => 'postUpdate'
+            ]);
+
+            $doctrineListener->tag('doctrine.event_listener', [
+                'priority' => 500,
+                'connection' => $connectionName,
+                'event' => 'postLoad'
+            ]);
+        }
+
+        foreach($config['connections'] as $connectionName){
+//            $doctrineSubscriber->tag('doctrine.event_subscriber', [
+//                'priority' => 500,
+//                'connection' => $connectionName,
+//            ]);
 
             $encryptEventSubscriber->tag('kernal.event_subscriber', [
                 'connection' => $connectionName,
             ]);
+        }
+
+        // Check if Twig is available
+        if (class_exists(\Twig\Environment::class)) {
+            $container->import('../config/twig_services.yaml');
         }
     }
 }

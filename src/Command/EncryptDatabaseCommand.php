@@ -4,6 +4,7 @@ namespace SpecShaper\EncryptBundle\Command;
 
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -27,10 +28,11 @@ class EncryptDatabaseCommand extends Command
     private array $encryptedFields = [];
 
     public function __construct(
-        private readonly Reader $annotationReader,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
-        private readonly array $annotationArray
+        private readonly LoggerInterface $logger,
+        private readonly array $annotationArray,
+        private readonly ?Reader $annotationReader = null,
     )
     {
         parent::__construct();
@@ -122,7 +124,6 @@ class EncryptDatabaseCommand extends Command
 
             $tableName = $entityMeta->getTableName();
 
-
             if (isset($this->encryptedFields[$tableName])) {
                 return $this->encryptedFields[$tableName];
             }
@@ -149,16 +150,21 @@ class EncryptDatabaseCommand extends Command
             }
         }
 
-        foreach ($this->annotationReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
-            if (in_array(get_class($annotation), $this->annotationArray)) {
-                $refProperty->setAccessible(true);
+        if ($this->annotationReader instanceof Reader) {
+            foreach ($this->annotationReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
+                if (in_array(get_class($annotation), $this->annotationArray)) {
+                    $refProperty->setAccessible(true);
 
-                $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in property %s is deprectated.
-                    Please use #[Encrypted] attribute instead.',
-                    $refProperty
-                ));
+                    $this->logger->debug(
+                        sprintf(
+                            'Use of @Encrypted property from SpecShaper/EncryptBundle in property %s is deprectated.
+                        Please use #[Encrypted] attribute instead.',
+                            $refProperty
+                        )
+                    );
 
-                return true;
+                    return true;
+                }
             }
         }
 

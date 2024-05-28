@@ -6,13 +6,9 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 
-
 class EncryptExtension extends AbstractExtension
 {
-    /**
-     * @var EncryptorInterface
-     */
-    private $encryptor;
+    private EncryptorInterface $encryptor;
 
     public function __construct(EncryptorInterface $encryptor)
     {

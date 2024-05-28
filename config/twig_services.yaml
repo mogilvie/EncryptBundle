@@ -1,0 +1,5 @@
+services:
+    SpecShaper\EncryptBundle\Twig\EncryptExtension:
+        tags: ['twig.extension']
+        arguments:
+            $encryptor: '@SpecShaper\EncryptBundle\Encryptors\EncryptorInterface'
