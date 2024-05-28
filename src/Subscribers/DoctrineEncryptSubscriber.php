@@ -160,7 +160,10 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         $oid = spl_object_id($entity);
         $meta = $em->getClassMetadata(get_class($entity));
 
-        foreach ($properties as $key => $refProperty) {
+        foreach ($properties as $refProperty) {
+
+            $field = $refProperty->getName();
+
             // Get the value in the entity.
             $value = $refProperty->getValue($entity);
 
@@ -178,13 +181,13 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 $changeSet = $unitOfWork->getEntityChangeSet($entity);
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
-                if (isset($changeSet[$key])) {
+                if (isset($changeSet[$field])) {
                     $encryptedValue = $this->encryptor->encrypt($value);
                     $refProperty->setValue($entity, $encryptedValue);
                     $unitOfWork->recomputeSingleEntityChangeSet($meta, $entity);
 
                     // Will be restored during postUpdate cycle for updates, or below for inserts
-                    $this->rawValues[$oid][$key] = $value;
+                    $this->rawValues[$oid][$field] = $value;
                 }
             } else {
                 // Decryption is fired by onLoad and postFlush events.
@@ -192,7 +195,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 $refProperty->setValue($entity, $decryptedValue);
 
                 // Tell Doctrine the original value was the decrypted one.
-                $unitOfWork->setOriginalEntityProperty($oid, $key, $decryptedValue);
+                $unitOfWork->setOriginalEntityProperty($oid, $field, $decryptedValue);
             }
         }
 
@@ -231,17 +234,20 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
      */
     protected function getEncryptedFields(object $entity, EntityManagerInterface $em): array
     {
-        $className = get_class($entity);
+        // Create a ReflectionClass instance
+        $reflectionClass = new \ReflectionClass($entity);
+
+        $className = $reflectionClass->getName();
 
         if (isset($this->encryptedFieldCache[$className])) {
             return $this->encryptedFieldCache[$className];
         }
 
-        $meta = $em->getClassMetadata($className);
+        $properties = $reflectionClass->getProperties();
 
         $encryptedFields = [];
 
-        foreach ($meta->getReflectionProperties() as $key => $refProperty) {
+        foreach ($properties as $key => $refProperty) {
             if ($this->isEncryptedProperty($refProperty)) {
                 $encryptedFields[$key] = $refProperty;
             }
