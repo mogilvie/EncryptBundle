@@ -45,6 +45,10 @@ class SpecShaperEncryptBundle extends AbstractBundle
                         Encrypted::class,
                     ])
                 ->end()
+                ->booleanNode('enable_twig')
+                    ->defaultTrue()
+                    ->info('Enable or disable Twig functionality')
+                ->end()
             ->end()
         ;
     }
@@ -88,6 +92,11 @@ class SpecShaperEncryptBundle extends AbstractBundle
             $encryptEventSubscriber->tag('kernal.event_subscriber', [
                 'connection' => $connectionName,
             ]);
+        }
+
+        // Check if Twig is available
+        if ($config['enable_twig'] && class_exists(\Twig\Environment::class)) {
+            $container->import('../config/twig_services.yaml');
         }
     }
 }

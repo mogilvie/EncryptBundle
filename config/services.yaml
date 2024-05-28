@@ -38,10 +38,6 @@ services:
         arguments:
             $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
 
-    # Encrypt Twig extension that defins the decrypt filter.
-    SpecShaper\EncryptBundle\Twig\EncryptExtension:
-        tags: ['twig.extension']
-
     # CLI command to encrypt or decrypt all fields in a database
     SpecShaper\EncryptBundle\Command\EncryptDatabaseCommand:
         arguments:
