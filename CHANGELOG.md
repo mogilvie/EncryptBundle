@@ -5,7 +5,7 @@ Resolve issue of child classes containing Encrypted values not persisting correc
 Made Twig extension an opt-out in config.
 Check for null encrypted values on insert.
 Fix command for bulk update/changes to the database.
-Restore backward compatablity for 5.4.
+Restore backward compatibility for 5.4.
 Add AES-GCM-256 Encryptor
 
 ## 3.1.0 (2023-02-22) Update
