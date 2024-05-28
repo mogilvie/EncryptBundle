@@ -6,7 +6,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class EncryptorFactory
 {
-    public const SUPPORTED_EXTENSION_OPENSSL = OpenSslEncryptor::class;
+    public const SUPPORTED_EXTENSION_OPENSSL = AesCbcEncryptor::class;
 
     private EventDispatcherInterface $dispatcher;
 
@@ -25,6 +25,7 @@ class EncryptorFactory
     {
         $encryptor = new $encryptorClass($this->dispatcher);
         $encryptor->setSecretKey($encryptKey);
+
         return $encryptor;
     }
 }

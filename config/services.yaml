@@ -37,6 +37,7 @@ services:
         factory: ['@SpecShaper\EncryptBundle\Encryptors\EncryptorFactory','createService']
         arguments:
             $encryptKey: '%spec_shaper_encrypt.encrypt_key%'
+            $encryptorClass: '%spec_shaper_encrypt.encryptor_class%'
 
     # CLI command to encrypt or decrypt all fields in a database
     SpecShaper\EncryptBundle\Command\EncryptDatabaseCommand:

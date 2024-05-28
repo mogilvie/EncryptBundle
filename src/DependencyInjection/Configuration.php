@@ -3,7 +3,7 @@
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
-use SpecShaper\EncryptBundle\Encryptors\AecCbcEncryptor;
+use SpecShaper\EncryptBundle\Encryptors\AesCbcEncryptor;
 use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -26,7 +26,7 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('encrypt_key')->end()
             ->scalarNode('method')->defaultValue('OpenSSL')->end()
             ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
-            ->scalarNode('encryptor_class')->defaultValue(AecCbcEncryptor::class)->end()
+            ->scalarNode('encryptor_class')->defaultValue(AesCbcEncryptor::class)->end()
             ->scalarNode('is_disabled')->defaultValue(false)->end()
             ->arrayNode('connections')
             ->treatNullLike([])

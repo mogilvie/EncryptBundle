@@ -8,10 +8,10 @@
 
 namespace SpecShaper\EncryptBundle\tests\Unit\Encryptors;
 
-use SpecShaper\EncryptBundle\Encryptors\OpenSslEncryptor;
+use SpecShaper\EncryptBundle\Encryptors\AesCbcEncryptor;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
+class AesCbcEncryptorTest extends \PHPUnit\Framework\TestCase
 {
     private const TEST_KEY = 'YBmNcBGfrZoayB+V254wdYa/abvxSUWJsjCtlMc1tRI=';
 
@@ -22,7 +22,7 @@ class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
         $object = new \stdClass();
         $object->test = 'Test';
 
-        $encryptor = new OpenSslEncryptor(new EventDispatcher());
+        $encryptor = new AesCbcEncryptor(new EventDispatcher());
         $encryptor->setSecretKey(self::TEST_KEY);
 
         $encryptor->encrypt($object);
@@ -33,7 +33,7 @@ class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
      */
     public function testEncrypt()
     {
-        $encryptor = new OpenSslEncryptor(new EventDispatcher());
+        $encryptor = new AesCbcEncryptor(new EventDispatcher());
         $encryptor->setSecretKey(self::TEST_KEY);
 
         // Assert that empty value returns an empty value.
@@ -64,7 +64,7 @@ class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
         $object->test = 'Test';
 
         // ...and then add your test code that generates the exception
-        $encryptor = new OpenSslEncryptor(new EventDispatcher());
+        $encryptor = new AesCbcEncryptor(new EventDispatcher());
         $encryptor->setSecretKey(self::TEST_KEY);
         $encryptor->decrypt($object);
     }
@@ -74,7 +74,7 @@ class OpenSslEncryptorTest extends \PHPUnit\Framework\TestCase
      */
     public function testDecrypt()
     {
-        $encryptor = new OpenSslEncryptor(new EventDispatcher());
+        $encryptor = new AesCbcEncryptor(new EventDispatcher());
         $encryptor->setSecretKey(self::TEST_KEY);
 
         // Assert that empty value returns an empty value.

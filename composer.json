@@ -21,7 +21,9 @@
         "doctrine/orm": "^2.11",
         "doctrine/doctrine-bundle": "^2.5",
         "symfony/monolog-bundle": "^3.7",
-        "ext-openssl": "*"
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-sodium": "*"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0"
