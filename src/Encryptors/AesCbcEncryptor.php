@@ -45,7 +45,7 @@ class AesCbcEncryptor implements EncryptorInterface
     /**
      * @throws \Exception
      */
-    public function encrypt(?string $data): ?string
+    public function encrypt(?string $data, ?string $columnName = null): ?string
     {
         // If not data return data (null)
         if (is_null($data)) {
@@ -79,7 +79,7 @@ class AesCbcEncryptor implements EncryptorInterface
     /**
      * @throws \Exception
      */
-    public function decrypt(?string $data): ?string
+    public function decrypt(?string $data, ?string $columnName = null): ?string
     {
         // If the value is an object or null then ignore
         if (is_null($data)) {

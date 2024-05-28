@@ -23,29 +23,30 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-            ->scalarNode('encrypt_key')->end()
-            ->scalarNode('method')->defaultValue('OpenSSL')->end()
-            ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
-            ->scalarNode('encryptor_class')->defaultValue(AesCbcEncryptor::class)->end()
-            ->scalarNode('is_disabled')->defaultValue(false)->end()
-            ->arrayNode('connections')
-            ->treatNullLike([])
-            ->prototype('scalar')->end()
-            ->defaultValue([
-                'default',
-            ])
-            ->end()
-            ->arrayNode('annotation_classes')
-            ->treatNullLike([])
-            ->prototype('scalar')->end()
-            ->defaultValue([
-                Encrypted::class,
-            ])
-            ->end()
-            ->booleanNode('enable_twig')
-            ->defaultTrue()
-            ->info('Enable or disable Twig functionality')
-            ->end()
+                ->scalarNode('encrypt_key')->end()
+                ->scalarNode('default_associated_data')->defaultValue(null)->end()
+                ->scalarNode('method')->defaultValue('OpenSSL')->end()
+                ->scalarNode('subscriber_class')->defaultValue(DoctrineEncryptSubscriber::class)->end()
+                ->scalarNode('encryptor_class')->defaultValue(AesCbcEncryptor::class)->end()
+                ->scalarNode('is_disabled')->defaultValue(false)->end()
+                ->arrayNode('connections')
+                ->treatNullLike([])
+                ->prototype('scalar')->end()
+                ->defaultValue([
+                    'default',
+                ])
+                ->end()
+                ->arrayNode('annotation_classes')
+                ->treatNullLike([])
+                ->prototype('scalar')->end()
+                ->defaultValue([
+                    Encrypted::class,
+                ])
+                ->end()
+                ->booleanNode('enable_twig')
+                ->defaultTrue()
+                ->info('Enable or disable Twig functionality')
+                ->end()
             ->end()
         ;
 

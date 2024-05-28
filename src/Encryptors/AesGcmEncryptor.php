@@ -20,6 +20,8 @@ class AesGcmEncryptor implements EncryptorInterface
 
     private EventDispatcherInterface $dispatcher;
 
+    private ?string $defaultAssociatedData;
+
     /**
      * OpenSslEncryptor constructor.
      */
@@ -38,10 +40,15 @@ class AesGcmEncryptor implements EncryptorInterface
         $this->secretKey = $secretKey;
     }
 
+    public function setDefaultAssociatedData(?string $defaultAssociatedData): void
+    {
+        $this->defaultAssociatedData = $defaultAssociatedData;
+    }
+
     /**
      * @throws \Exception
      */
-    public function encrypt(?string $data): ?string
+    public function encrypt(?string $data, ?string $columnName): ?string
     {
         if (is_null($data)) {
             return null;
@@ -55,6 +62,7 @@ class AesGcmEncryptor implements EncryptorInterface
         $ivsize = openssl_cipher_iv_length(self::METHOD);
         $iv = openssl_random_pseudo_bytes($ivsize);
         $tag = '';
+        $associatedData = $columnName ?? $this->defaultAssociatedData;
 
         $ciphertext = openssl_encrypt(
             $data,
@@ -62,7 +70,8 @@ class AesGcmEncryptor implements EncryptorInterface
             $key,
             OPENSSL_RAW_DATA,
             $iv,
-            $tag
+            $tag,
+            $associatedData
         );
 
         if ($ciphertext === false) {
@@ -75,7 +84,7 @@ class AesGcmEncryptor implements EncryptorInterface
     /**
      * @throws \Exception
      */
-    public function decrypt(?string $data): ?string
+    public function decrypt(?string $data, ?string $columnName): ?string
     {
         if (is_null($data)) {
             return null;
@@ -103,7 +112,8 @@ class AesGcmEncryptor implements EncryptorInterface
             $key,
             OPENSSL_RAW_DATA,
             $iv,
-            $tag
+            $tag,
+            $columnName
         );
 
         if ($plaintext === false) {

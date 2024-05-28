@@ -38,6 +38,7 @@ class SpecShaperEncryptExtension extends Extension
         }
 
         $container->setParameter($this->getAlias().'.encrypt_key', $encryptKey);
+        $container->setParameter($this->getAlias().'.default_associated_data', $config['default_associated_data']);
         $container->setParameter($this->getAlias().'.method', $config['method']);
         $container->setParameter($this->getAlias().'.subscriber_class', $config['subscriber_class']);
         $container->setParameter($this->getAlias().'.encryptor_class', $config['encryptor_class']);

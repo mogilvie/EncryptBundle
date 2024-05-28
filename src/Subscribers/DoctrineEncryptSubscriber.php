@@ -124,10 +124,10 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
      * If the value is an object, or if it does not contain the suffic <ENC> then return the value iteslf back.
      * Otherwise, decrypt the value and return.
      */
-    public function decryptValue(?string $value): ?string
+    public function decryptValue(?string $value, ?string $columnName): ?string
     {
         // Else decrypt value and return.
-        return $this->encryptor->decrypt($value);
+        return $this->encryptor->decrypt($value, $columnName);
     }
 
     public function getEncryptionableProperties(array $allProperties): array
@@ -182,7 +182,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
                 if (isset($changeSet[$field])) {
-                    $encryptedValue = $this->encryptor->encrypt($value);
+                    $encryptedValue = $this->encryptor->encrypt($value, $field);
                     $refProperty->setValue($entity, $encryptedValue);
                     $unitOfWork->recomputeSingleEntityChangeSet($meta, $entity);
 
@@ -191,7 +191,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 }
             } else {
                 // Decryption is fired by onLoad and postFlush events.
-                $decryptedValue = $this->decryptValue($value);
+                $decryptedValue = $this->decryptValue($value, $field);
                 $refProperty->setValue($entity, $decryptedValue);
 
                 // Tell Doctrine the original value was the decrypted one.
