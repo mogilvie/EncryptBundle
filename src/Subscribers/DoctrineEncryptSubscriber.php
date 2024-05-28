@@ -5,6 +5,8 @@ namespace SpecShaper\EncryptBundle\Subscribers;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -159,18 +161,16 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         $unitOfWork = $em->getUnitOfWork();
         $oid = spl_object_id($entity);
         $meta = $em->getClassMetadata(get_class($entity));
+        $platform = $em->getConnection()->getDatabasePlatform();
 
         foreach ($properties as $key => $refProperty) {
             // Get the value in the entity.
             $value = $refProperty->getValue($entity);
+            $type = ($fieldType = $meta->getTypeOfField($key)) ? Type::getType($fieldType) : null;
 
             // Skip any null values.
             if (null === $value) {
                 continue;
-            }
-
-            if (is_object($value)) {
-                throw new EncryptException('Cannot encrypt an object at '.$refProperty->class.':'.$refProperty->getName(), $value);
             }
 
             // Encryption is fired by onFlush event, else it is an onLoad event.
@@ -179,6 +179,12 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
                 // Encrypt value only if change has been detected by Doctrine (comparing unencrypted values, see postLoad flow)
                 if (isset($changeSet[$key])) {
+                    $value = is_scalar($value) ? $value : $type->convertToDatabaseValue($value, $platform);
+
+                    if (!is_scalar($value)) {
+                        throw new EncryptException('Cannot encrypt non-scalar value at '.$refProperty->class.':'.$refProperty->getName(), $value);
+                    }
+
                     $encryptedValue = $this->encryptor->encrypt($value);
                     $refProperty->setValue($entity, $encryptedValue);
                     $unitOfWork->recomputeSingleEntityChangeSet($meta, $entity);
@@ -187,8 +193,13 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                     $this->rawValues[$oid][$key] = $value;
                 }
             } else {
+                if (!is_scalar($value)) {
+                    throw new EncryptException('Cannot decrypt non-scalar value at '.$refProperty->class.':'.$refProperty->getName(), $value);
+                }
+
                 // Decryption is fired by onLoad and postFlush events.
                 $decryptedValue = $this->decryptValue($value);
+                $decryptedValue = $type->convertToPHPValue($decryptedValue, $platform);
                 $refProperty->setValue($entity, $decryptedValue);
 
                 // Tell Doctrine the original value was the decrypted one.
