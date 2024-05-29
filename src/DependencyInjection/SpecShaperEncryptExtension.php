@@ -31,6 +31,8 @@ class SpecShaperEncryptExtension extends Extension
         } else {
             $encryptKey = $config['encrypt_key'];
         }
+//
+//        dump($encryptKey);
 
         if (array_key_exists('subscriber_class', $config)) {
             trigger_deprecation('SpecShaperEncryptBundle', 'v4.0.0', 'DoctrineSubscribers will be deprecated in version 4. If you
@@ -76,7 +78,7 @@ class SpecShaperEncryptExtension extends Extension
 
         // Check if Twig is available
         if ($config['enable_twig'] && class_exists(\Twig\Environment::class)) {
-            $loader->load('services.yaml');
+            $loader->load('twig_services.yaml');
         }
     }
 }
