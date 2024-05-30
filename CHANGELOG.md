@@ -1,6 +1,6 @@
 #Change Log
 
-## 3.1.1 (2024-05-28) Update
+## 3.2.0 (2024-05-40) Update
 Resolve issue of child classes containing Encrypted values not persisting correctly.
 Made Twig extension an opt-out in config.
 Check for null encrypted values on insert.
