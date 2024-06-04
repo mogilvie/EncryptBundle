@@ -5,6 +5,7 @@ namespace SpecShaper\EncryptBundle\Subscribers;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
+use Doctrine\Common\Util\ClassUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -114,6 +115,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     public function postLoad(LifecycleEventArgs $args): void
     {
         $entity = $args->getObject();
+
         // Decrypt the entity fields.
         $this->processFields($entity, $args->getObjectManager(), false, false);
     }
@@ -235,8 +237,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
      */
     protected function getEncryptedFields(object $entity): array
     {
-        // Create a ReflectionClass instance
-        $reflectionClass = new \ReflectionClass($entity);
+        $reflectionClass = $this->getOriginalEntityReflection($entity);
 
         $className = $reflectionClass->getName();
 
@@ -249,6 +250,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         $encryptedFields = [];
 
         foreach ($properties as $key => $refProperty) {
+
             if ($this->isEncryptedProperty($refProperty)) {
                 $encryptedFields[$key] = $refProperty;
             }
@@ -261,8 +263,10 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
     private function isEncryptedProperty(ReflectionProperty $refProperty)
     {
+
         // If PHP8, and has attributes.
         if(method_exists($refProperty, 'getAttributes')) {
+
             foreach ($refProperty->getAttributes() as $refAttribute) {
                 if (in_array($refAttribute->getName(), $this->annotationArray)) {
                     return true;
@@ -284,5 +288,11 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         }
 
         return false;
+    }
+
+    protected function getOriginalEntityReflection($entity): \ReflectionClass
+    {
+        $realClassName = ClassUtils::getClass($entity);
+        return new \ReflectionClass($realClassName);
     }
 }
