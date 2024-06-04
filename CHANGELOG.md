@@ -1,18 +1,18 @@
 #Change Log
 
-## 3.1.1 (2024-05-28) Update
-Resolve issue of child classes containing Encrypted values not persisting correctly.
-Made Twig extension an opt-out in config.
-Check for null encrypted values on insert.
-Fix command for bulk update/changes to the database.
-Restore backward compatibility for 5.4.
-Add AES-GCM-256 Encryptor
+## 3.2.0 (2024-05-40) Update
+Resolve issue of child classes containing Encrypted values not persisting correctly.  
+Made Twig extension an opt-out in config.  
+Check for null encrypted values on insert.  
+Fix command for bulk update/changes to the database.  
+Restore backward compatibility for 5.4.  
+Add AES-GCM-256 Encryptor  
 
 ## 3.1.0 (2023-02-22) Update
-Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.
-Add option to catch doctrine events from multiple connections.
-Add encrypt and decrypt CLI commands.
-Refactor for symfony flex and Symfony 6 recommended third party bundle structure
+Add attribute support for #[Encrypted] attributes instead of @Encrypted annotations.  
+Add option to catch doctrine events from multiple connections.  
+Add encrypt and decrypt CLI commands.  
+Refactor for symfony flex and Symfony 6 recommended third party bundle structure.  
 
 ## 3.0.1 (2022-03-13) Symfony 6 and PHP 8
 Major backward compatibility breaking change to Symfony 6 and PHP 8.
