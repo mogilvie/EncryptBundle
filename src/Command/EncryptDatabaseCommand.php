@@ -12,7 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Command\Command;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Psr\Log\LoggerInterface;
 
@@ -32,7 +32,7 @@ class EncryptDatabaseCommand extends Command
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly Reader $annotationReader,
+        private readonly AnnotationReader $annotationReader,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
         private readonly array $annotationArray

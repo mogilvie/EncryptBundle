@@ -3,7 +3,7 @@
 namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\Common\Annotations\Reader;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,7 +45,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly Reader $annReader,
+        private readonly AnnotationReader $annReader,
         private readonly EncryptorInterface $encryptor,
         private readonly EntityManagerInterface $em,
         array $annotationArray,
