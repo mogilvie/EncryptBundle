@@ -7,6 +7,7 @@ use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
@@ -22,6 +23,7 @@ interface DoctrineEncryptSubscriberInterface
         LoggerInterface $logger,
         Reader $annReader,
         EncryptorInterface $encryptor,
+        EntityManagerInterface $em,
         array $annotationArray,
         bool $isDisabled
     );
