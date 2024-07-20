@@ -14,6 +14,7 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Psr\Log\LoggerInterface;
 
 /**
  * bin/console encrypt:database decrypt --manager=default
@@ -30,6 +31,7 @@ class EncryptDatabaseCommand extends Command
     private array $encryptedFields = [];
 
     public function __construct(
+        private readonly LoggerInterface $logger,
         private readonly Reader $annotationReader,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
@@ -154,7 +156,7 @@ class EncryptDatabaseCommand extends Command
         return $this->encryptedFields;
     }
 
-    private function isEncryptedProperty(\ReflectionProperty $refProperty)
+    private function isEncryptedProperty(\ReflectionProperty $refProperty): bool
     {
 
         foreach ($refProperty->getAttributes() as $refAttribute) {

@@ -5,7 +5,7 @@ namespace SpecShaper\EncryptBundle\Subscribers;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\Common\Util\ClassUtils;
+use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -15,6 +15,7 @@ use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
 use Psr\Log\LoggerInterface;
+
 
 /**
  * Doctrine event subscriber which encrypt/decrypt entities.
@@ -46,6 +47,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         private readonly LoggerInterface $logger,
         private readonly Reader $annReader,
         private readonly EncryptorInterface $encryptor,
+        private readonly EntityManagerInterface $em,
         array $annotationArray,
         bool $isDisabled
     ) {
@@ -94,15 +96,14 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
             return;
         }
 
-        $em = $args->getObjectManager();
-        $unitOfWork = $em->getUnitOfWork();
+        $unitOfWork = $this->em->getUnitOfWork();
 
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
-            $this->processFields($entity, $em, true, true);
+            $this->processFields($entity, true, true);
         }
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            $this->processFields($entity, $em, true, false);
+            $this->processFields($entity, true, false);
         }
     }
 
@@ -117,7 +118,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         $entity = $args->getObject();
 
         // Decrypt the entity fields.
-        $this->processFields($entity, $args->getObjectManager(), false, false);
+        $this->processFields($entity, false, false);
     }
 
     /**
@@ -148,7 +149,7 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     /**
      * Process (encrypt/decrypt) entities fields.
      */
-    protected function processFields(object $entity, EntityManagerInterface $em, bool $isEncryptOperation, bool $isInsert): bool
+    protected function processFields(object $entity, bool $isEncryptOperation, bool $isInsert): bool
     {
         // Get the encrypted properties in the entity.
         $properties = $this->getEncryptedFields($entity);
@@ -158,9 +159,9 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
             return false;
         }
 
-        $unitOfWork = $em->getUnitOfWork();
+        $unitOfWork = $this->em->getUnitOfWork();
         $oid = spl_object_id($entity);
-        $meta = $em->getClassMetadata(get_class($entity));
+        $meta = $this->em->getClassMetadata(get_class($entity));
 
         foreach ($properties as $refProperty) {
 
@@ -217,12 +218,11 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     public function postUpdate(LifecycleEventArgs $args): void
     {
         $entity = $args->getObject();
-        $em = $args->getObjectManager();
-
         $oid = spl_object_id($entity);
+
         if (isset($this->rawValues[$oid])) {
             $className = get_class($entity);
-            $meta = $em->getClassMetadata($className);
+            $meta = $this->em->getClassMetadata($className);
             foreach ($this->rawValues[$oid] as $prop => $rawValue) {
                 $refProperty = $meta->getReflectionProperty($prop);
                 $refProperty->setValue($entity, $rawValue);
@@ -290,9 +290,9 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
         return false;
     }
 
-    protected function getOriginalEntityReflection($entity): \ReflectionClass
+    protected function getOriginalEntityReflection(Entity $entity): \ReflectionClass
     {
-        $realClassName = ClassUtils::getClass($entity);
+        $realClassName = $this->em->getClassMetadata(get_class($entity))->getName();
         return new \ReflectionClass($realClassName);
     }
 }
