@@ -3,7 +3,6 @@
 namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,7 +44,6 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly AnnotationReader $annReader,
         private readonly EncryptorInterface $encryptor,
         private readonly EntityManagerInterface $em,
         array $annotationArray,
@@ -271,19 +269,6 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
                 if (in_array($refAttribute->getName(), $this->annotationArray)) {
                     return true;
                 }
-            }
-        }
-
-        foreach ($this->annReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
-            if (in_array(get_class($annotation), $this->annotationArray)) {
-                $refProperty->setAccessible(true);
-
-                $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in property %s is deprectated.
-                    Please use #[Encrypted] attribute instead.',
-                    $refProperty
-                ));
-
-                return true;
             }
         }
 

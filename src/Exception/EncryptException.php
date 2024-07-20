@@ -21,7 +21,7 @@ class EncryptException extends \Exception
      * Set the text and html of the exception in the messages' translation file.
      *
      * @param string|null $message Optional message
-     * @param null        $value
+     * @param $value
      */
     public function __construct(?string $message = null, $value = null)
     {
