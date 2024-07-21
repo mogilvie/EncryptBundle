@@ -1,6 +1,6 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Subscribers;
+namespace SpecShaper\EncryptBundle\Listeners;
 
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;
@@ -8,9 +8,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 
 /**
- * Doctrine event subscriber which encrypt/decrypt entities.
+ * Doctrine event listener interface which encrypts/decrypts entities.
  */
-interface DoctrineEncryptSubscriberInterface
+interface DoctrineEncryptListenerInterface
 {
     public const ENCRYPTED_SUFFIX = '<ENC>';
 
@@ -40,11 +40,4 @@ interface DoctrineEncryptSubscriberInterface
      * which have @Encrypted annotations.
      */
     public function postLoad(LifecycleEventArgs $args): void;
-
-    /**
-     * Realization of EventSubscriber interface method.
-     *
-     * @return array Return all events which this subscriber is listening
-     */
-    public function getSubscribedEvents(): array;
 }

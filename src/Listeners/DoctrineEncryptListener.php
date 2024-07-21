@@ -1,8 +1,7 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Subscribers;
+namespace SpecShaper\EncryptBundle\Listeners;
 
-use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
@@ -11,12 +10,15 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 use ReflectionProperty;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 
 /**
- * Doctrine event subscriber which encrypt/decrypt entities.
+ * Doctrine event listener which encrypts/decrypts entities.
  */
-class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEncryptSubscriberInterface
+#[AsDoctrineListener(event: Events::postLoad, method: 'postLoad')]
+#[AsDoctrineListener(event: Events::postUpdate, method: 'postUpdate')]
+#[AsDoctrineListener(event: Events::onFlush, method: 'onFlush')]
+class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
 {
     /**
      * Encryptor interface namespace.
@@ -60,25 +62,11 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
      * Used to programmatically disable encryption on flush operations.
      * Decryption still occurs if values have the <ENC> suffix.
      */
-    public function setIsDisabled(?bool $isDisabled = true): DoctrineEncryptSubscriberInterface
+    public function setIsDisabled(?bool $isDisabled = true): DoctrineEncryptListenerInterface
     {
         $this->isDisabled = $isDisabled;
 
         return $this;
-    }
-
-    /**
-     * Realization of EventSubscriber interface method.
-     *
-     * @return array Return all events which this subscriber is listening
-     */
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::postLoad,
-            Events::postUpdate,
-            Events::onFlush,
-        ];
     }
 
     /**
