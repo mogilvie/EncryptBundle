@@ -68,7 +68,7 @@ class SpecShaperEncryptExtension extends Extension
             ]);
 
             $doctrineListener->addTag('doctrine.event_listener', [
-                'event' => 'postLoad',
+                'event' => 'onFlush',
                 'priority' => 500,
                 'connection' => $connectionName,
             ]);

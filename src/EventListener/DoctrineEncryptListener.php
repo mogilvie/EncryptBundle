@@ -247,7 +247,6 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
 
         // If PHP8, and has attributes.
         if(method_exists($refProperty, 'getAttributes')) {
-
             foreach ($refProperty->getAttributes() as $refAttribute) {
                 if (in_array($refAttribute->getName(), $this->annotationArray)) {
                     return true;
