@@ -2,6 +2,7 @@
 
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
+use SpecShaper\EncryptBundle\Event\EncryptEvents;
 use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener;
 use SpecShaper\EncryptBundle\EventListener\EncryptEventListener;
 use Symfony\Component\Config\FileLocator;
@@ -43,14 +44,14 @@ class SpecShaperEncryptExtension extends Extension
         $doctrineListener = new Definition($config['listener_class']);
         $doctrineListener
             ->setAutowired(true)
-            ->setArgument(3, $config['annotation_classes'])
-            ->setArgument(4, $config['is_disabled'])
+            ->setArgument('$annotationArray', $config['annotation_classes'])
+            ->setArgument('$isDisabled', $config['is_disabled'])
         ;
 
         $encryptEventListener = new Definition(EncryptEventListener::class);
         $encryptEventListener
             ->setAutowired(true)
-            ->setArgument(1, $config['is_disabled'])
+            ->setArgument('$isDisabled', $config['is_disabled'])
         ;
 
         foreach ($config['connections'] as $connectionName) {
@@ -73,12 +74,14 @@ class SpecShaperEncryptExtension extends Extension
             ]);
 
             $encryptEventListener->addTag('kernel.event_listener', [
-                'event' => 'encrypt',
+                'event' => EncryptEvents::ENCRYPT,
+                'method' => 'encrypt',
                 'connection' => $connectionName,
             ]);
 
             $encryptEventListener->addTag('kernel.event_listener', [
-                'event' => 'decrypt',
+                'event' => EncryptEvents::DECRYPT,
+                'method' => 'decrypt',
                 'connection' => $connectionName,
             ]);
         }
