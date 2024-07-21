@@ -1,6 +1,6 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Listeners;
+namespace SpecShaper\EncryptBundle\EventListener;
 
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,9 +15,9 @@ use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 /**
  * Doctrine event listener which encrypts/decrypts entities.
  */
-#[AsDoctrineListener(event: Events::postLoad, method: 'postLoad')]
-#[AsDoctrineListener(event: Events::postUpdate, method: 'postUpdate')]
-#[AsDoctrineListener(event: Events::onFlush, method: 'onFlush')]
+#[AsDoctrineListener(event: Events::postLoad, priority: 500)]
+#[AsDoctrineListener(event: Events::postUpdate, priority: 500)]
+#[AsDoctrineListener(event: Events::onFlush, priority: 500)]
 class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
 {
     /**

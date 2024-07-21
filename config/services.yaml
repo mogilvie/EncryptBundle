@@ -11,7 +11,7 @@ services:
         public: false
 
     # Listener Interface, default is DoctrineEncryptListener but it can be overriden in the app config
-#    SpecShaper\EncryptBundle\Listeners\DoctrineEncryptListenerInterface:
+#    SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface:
 #        class: '%spec_shaper_encrypt.listener_class%'
 #        arguments:
 #            $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
@@ -20,7 +20,7 @@ services:
 #            - { name: doctrine.event_listener, connection: default }
 
     # Listeners to catch any encrypt or decrypt events thrown
-#    SpecShaper\EncryptBundle\Listeners\EncryptEventListener:
+#    SpecShaper\EncryptBundle\EventListener\EncryptEventListener:
 #        arguments:
 #            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
 #        tags:

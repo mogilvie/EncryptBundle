@@ -4,7 +4,7 @@ namespace SpecShaper\EncryptBundle\DependencyInjection;
 
 use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\AesCbcEncryptor;
-use SpecShaper\EncryptBundle\Listeners\DoctrineEncryptListener;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 

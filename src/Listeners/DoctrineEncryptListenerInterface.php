@@ -1,6 +1,6 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Listeners;
+namespace SpecShaper\EncryptBundle\EventListener;
 
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\OnFlushEventArgs;

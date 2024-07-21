@@ -5,7 +5,7 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvent;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvents;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-use SpecShaper\EncryptBundle\Listeners\DoctrineEncryptListenerInterface;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 

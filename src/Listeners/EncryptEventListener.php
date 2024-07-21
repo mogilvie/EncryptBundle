@@ -1,6 +1,6 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Listeners;
+namespace SpecShaper\EncryptBundle\EventListener;
 
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Event\EncryptEventInterface;
@@ -8,10 +8,10 @@ use SpecShaper\EncryptBundle\Event\EncryptEvents;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 
 /**
- * Doctrine event listener which encrypt/decrypt entities.
+ * Doctrine event listener which encrypts/decrypts entities.
  */
-#[AsDoctrineListener(event: EncryptEvents::ENCRYPT, method: 'encrypt')]
-#[AsDoctrineListener(event: EncryptEvents::DECRYPT, method: 'decrypt')]
+#[AsDoctrineListener(event: EncryptEvents::ENCRYPT)]
+#[AsDoctrineListener(event: EncryptEvents::DECRYPT)]
 class EncryptEventListener
 {
     /**

@@ -2,8 +2,8 @@
 
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
-use SpecShaper\EncryptBundle\Listeners\DoctrineEncryptListener;
-use SpecShaper\EncryptBundle\Listeners\EncryptEventListener;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener;
+use SpecShaper\EncryptBundle\EventListener\EncryptEventListener;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -55,11 +55,30 @@ class SpecShaperEncryptExtension extends Extension
 
         foreach ($config['connections'] as $connectionName) {
             $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'postLoad',
+                'priority' => 500,
+                'connection' => $connectionName,
+            ]);
+
+            $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'postUpdate',
+                'priority' => 500,
+                'connection' => $connectionName,
+            ]);
+
+            $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'postLoad',
                 'priority' => 500,
                 'connection' => $connectionName,
             ]);
 
             $encryptEventListener->addTag('kernel.event_listener', [
+                'event' => 'encrypt',
+                'connection' => $connectionName,
+            ]);
+
+            $encryptEventListener->addTag('kernel.event_listener', [
+                'event' => 'decrypt',
                 'connection' => $connectionName,
             ]);
         }

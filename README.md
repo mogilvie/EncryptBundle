@@ -95,7 +95,7 @@ spec_shaper_encrypt:
   connections:   # Optional, define the connection name(s) for the listener
     - 'default'
     - 'tenant'
-  listener_class: App\Listeners\MyCustomListener # Optional to override the bundle Doctrine event listener.
+  listener_class: App\EventListener\MyCustomListener # Optional to override the bundle Doctrine event listener.
   encryptor_class: App\Encryptors\MyCustomEncryptor # Optional to override the bundle OpenSslEncryptor.
   annotation_classes: # Optional to override the default annotation/Attribute object.
     - App\Annotation\MyAttribute
