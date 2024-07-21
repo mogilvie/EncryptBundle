@@ -3,17 +3,14 @@
 namespace SpecShaper\EncryptBundle\Subscribers;
 
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use ReflectionProperty;
-use SpecShaper\EncryptBundle\Annotations\Encrypted;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-use Psr\Log\LoggerInterface;
 
 
 /**
@@ -43,7 +40,6 @@ class DoctrineEncryptSubscriber implements EventSubscriberInterface, DoctrineEnc
     private bool $isDisabled;
 
     public function __construct(
-        private readonly LoggerInterface $logger,
         private readonly EncryptorInterface $encryptor,
         private readonly EntityManagerInterface $em,
         array $annotationArray,

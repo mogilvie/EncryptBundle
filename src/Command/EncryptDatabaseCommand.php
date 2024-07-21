@@ -13,7 +13,6 @@ use Symfony\Component\Console\Command\Command;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Psr\Log\LoggerInterface;
 
 /**
  * bin/console encrypt:database decrypt --manager=default
@@ -30,7 +29,6 @@ class EncryptDatabaseCommand extends Command
     private array $encryptedFields = [];
 
     public function __construct(
-        private readonly LoggerInterface $logger,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
         private readonly array $annotationArray
