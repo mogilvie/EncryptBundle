@@ -2,7 +2,6 @@
 
 namespace SpecShaper\EncryptBundle\EventListener;
 
-use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
@@ -259,7 +258,7 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
         return false;
     }
 
-    protected function getOriginalEntityReflection(Entity $entity): \ReflectionClass
+    protected function getOriginalEntityReflection($entity): \ReflectionClass
     {
         $realClassName = $this->em->getClassMetadata(get_class($entity))->getName();
         return new \ReflectionClass($realClassName);
