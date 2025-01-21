@@ -16,7 +16,7 @@ interface EncryptorInterface
      *
      * @return string|null Encrypted string
      */
-    public function encrypt(?string $data, ?string $columnName): ?string;
+    public function encrypt(?string $data, ?string $columnName = null): ?string;
 
     /**
      * Must accept data and return decrypted data.
@@ -25,5 +25,5 @@ interface EncryptorInterface
      *
      * @return string Unencrypted string
      */
-    public function decrypt(?string $data, ?string $columnName): ?string;
+    public function decrypt(?string $data, ?string $columnName = null): ?string;
 }

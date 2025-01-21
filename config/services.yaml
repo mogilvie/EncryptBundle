@@ -4,27 +4,27 @@ services:
     _defaults:
         # automatically injects dependencies in your services
         autowire: true
-        # automatically registers your services as commands, event subscribers, etc.
+        # automatically registers your services as commands, event listeners, etc.
         autoconfigure: true
         # this means you cannot fetch services directly from the container via $container->get()
         # if you need to do this, you can override this setting on individual services
         public: false
 
-    # Subscriber Interface, default is DoctrineEncryptSubscriber but it can be overriden in the app config
-#    SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface:
-#        class: '%spec_shaper_encrypt.subscriber_class%'
+    # Listener Interface, default is DoctrineEncryptListener but it can be overriden in the app config
+#    SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface:
+#        class: '%spec_shaper_encrypt.listener_class%'
 #        arguments:
 #            $annotationArray: '%spec_shaper_encrypt.annotation_classes%'
 #            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
 #        tags:
-#            - { name: doctrine.event_subscriber, connection: default }
+#            - { name: doctrine.event_listener, connection: default }
 
-    # Subscriber to catch any encrypt or decrypt events thrown
-#    SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber:
+    # Listeners to catch any encrypt or decrypt events thrown
+#    SpecShaper\EncryptBundle\EventListener\EncryptEventListener:
 #        arguments:
 #            $isDisabled: '%spec_shaper_encrypt.is_disabled%'
 #        tags:
-#            - { name: kernel.event_subscriber, connection: default }
+#            - { name: kernel.event_listener, connection: default }
 
     # Factory to create the encryptor/decryptor
     SpecShaper\EncryptBundle\Encryptors\EncryptorFactory:

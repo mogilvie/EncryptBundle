@@ -5,7 +5,7 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvent;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvents;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\Attribute\Required;
 
@@ -54,7 +54,7 @@ class AesGcmEncryptor implements EncryptorInterface
             return null;
         }
 
-        if (DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX === substr($data, -5)) {
+        if (DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX === substr($data, -5)) {
             return $data;
         }
 
@@ -78,7 +78,7 @@ class AesGcmEncryptor implements EncryptorInterface
             throw new EncryptException('Encryption failed.');
         }
 
-        return base64_encode($iv.$tag.$ciphertext).DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX;
+        return base64_encode($iv.$tag.$ciphertext).DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX;
     }
 
     /**
@@ -90,7 +90,7 @@ class AesGcmEncryptor implements EncryptorInterface
             return null;
         }
 
-        if (DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX !== substr($data, -5)) {
+        if (DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX !== substr($data, -5)) {
             return $data;
         }
 

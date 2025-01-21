@@ -92,10 +92,10 @@ Maker will have created a packages yaml file. The key is resolved in there.
 spec_shaper_encrypt:
   encrypt_key: '%env(SPEC_SHAPER_ENCRYPT_KEY)%'
   is_disabled: false # Turn this to true to disable the encryption.
-  connections:   # Optional, define the connection name(s) for the subscriber to listen to.
+  connections:   # Optional, define the connection name(s) for the listener
     - 'default'
     - 'tenant'
-  subscriber_class: App\Subscriber\MyCustomSubscriber # Optional to override the bundle Doctrine event subscriber.
+  listener_class: App\EventListener\MyCustomListener # Optional to override the bundle Doctrine event listener.
   encryptor_class: App\Encryptors\MyCustomEncryptor # Optional to override the bundle OpenSslEncryptor.
   annotation_classes: # Optional to override the default annotation/Attribute object.
     - App\Annotation\MyAttribute
@@ -104,8 +104,8 @@ spec_shaper_encrypt:
 You can disable encryption by setting the 'is_disabled' option to true. Decryption still continues if any values
 contain the \<ENC> suffix.
 
-You can extend the EncryptBundle default Subscriber and override its methods. Use the 'subscriber_class' option
-to point the bundle at your custom subscriber.
+You can extend the EncryptBundle default Listener and override its methods. Use the 'listener_class' option
+to point the bundle at your custom listener.
 
 If you want to define your own annotation/attribute, then this can be used to trigger encryption by adding the annotation 
 class name to the 'annotation_classes' option array.
@@ -198,13 +198,13 @@ with the DateType form type.
 
 ## Step 4: General Use
 
-The bundle comes with an DoctrineEncryptSubscriber. This subscriber catches the doctrine events
+The bundle comes with an DoctrineEncryptListener. This listener catches the doctrine events
 onLoad, onFlush and postFlush.
 
-The onLoad event subscriber will decrypt your entity parameter at loading. This means that your forms
+The onLoad event listener will decrypt your entity parameter at loading. This means that your forms
 and form fields will already be decrypted.
 
-The onFlush and postFlush event subscribers will check if encryption is enabled, and encrypt the data
+The onFlush and postFlush event listeners will check if encryption is enabled, and encrypt the data
 before entry to the database.
 
 So, in normal CRUD operation you do not need to do anything in the controller for encrypting or decrypting
@@ -270,7 +270,7 @@ Or you can dispatch the EncryptEvent.
 ## Step 5: Decrypt in templates
 
 If you query a repository using a select with an array result 
-then the doctrine onLoad event subscriber will not decrypt any encrypted
+then the doctrine onLoad event listener will not decrypt any encrypted
 values.
 
 In this case, use the twig filter to decrypt your value when rendering.

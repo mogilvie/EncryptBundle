@@ -5,7 +5,7 @@ namespace SpecShaper\EncryptBundle\Encryptors;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvent;
 use SpecShaper\EncryptBundle\Event\EncryptKeyEvents;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
-use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriberInterface;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -53,7 +53,7 @@ class AesCbcEncryptor implements EncryptorInterface
         }
 
         // If the value already has the suffix <ENC> then ignore.
-        if (DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX === substr($data, -5)) {
+        if (DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX === substr($data, -5)) {
             return $data;
         }
 
@@ -73,7 +73,7 @@ class AesCbcEncryptor implements EncryptorInterface
         );
 
         // Prefix the encoded text with the iv and encode it to base 64. Append the encoded suffix.
-        return base64_encode($iv.$ciphertext).DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX;
+        return base64_encode($iv.$ciphertext).DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX;
     }
 
     /**
@@ -87,7 +87,7 @@ class AesCbcEncryptor implements EncryptorInterface
         }
 
         // If the value does not have the suffix <ENC> then ignore.
-        if (DoctrineEncryptSubscriberInterface::ENCRYPTED_SUFFIX !== substr($data, -5)) {
+        if (DoctrineEncryptListenerInterface::ENCRYPTED_SUFFIX !== substr($data, -5)) {
             return $data;
         }
 

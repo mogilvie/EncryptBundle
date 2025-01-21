@@ -2,8 +2,9 @@
 
 namespace SpecShaper\EncryptBundle\DependencyInjection;
 
-use SpecShaper\EncryptBundle\Subscribers\DoctrineEncryptSubscriber;
-use SpecShaper\EncryptBundle\Subscribers\EncryptEventSubscriber;
+use SpecShaper\EncryptBundle\Event\EncryptEvents;
+use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListener;
+use SpecShaper\EncryptBundle\EventListener\EncryptEventListener;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -17,7 +18,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  */
 class SpecShaperEncryptExtension extends Extension
 {
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -31,49 +32,63 @@ class SpecShaperEncryptExtension extends Extension
         } else {
             $encryptKey = $config['encrypt_key'];
         }
-//
-//        dump($encryptKey);
-
-        if (array_key_exists('subscriber_class', $config)) {
-            trigger_deprecation('SpecShaperEncryptBundle', 'v4.0.0', 'DoctrineSubscribers will be deprecated in version 4. If you
-            have a custom subscriber in the encrypt bundle then this will need to be changed to a DoctrineListener.');
-        }
 
         $container->setParameter($this->getAlias().'.encrypt_key', $encryptKey);
         $container->setParameter($this->getAlias().'.default_associated_data', $config['default_associated_data']);
         $container->setParameter($this->getAlias().'.method', $config['method']);
-        $container->setParameter($this->getAlias().'.subscriber_class', $config['subscriber_class']);
+        $container->setParameter($this->getAlias().'.listener_class', $config['listener_class']);
         $container->setParameter($this->getAlias().'.encryptor_class', $config['encryptor_class']);
         $container->setParameter($this->getAlias().'.annotation_classes', $config['annotation_classes']);
         $container->setParameter($this->getAlias().'.is_disabled', $config['is_disabled']);
 
-        $doctrineSubscriber = new Definition($config['subscriber_class']);
-        $doctrineSubscriber
+        $doctrineListener = new Definition($config['listener_class']);
+        $doctrineListener
             ->setAutowired(true)
-            ->setArgument(3, $config['annotation_classes'])
-            ->setArgument(4, $config['is_disabled'])
+            ->setArgument('$annotationArray', $config['annotation_classes'])
+            ->setArgument('$isDisabled', $config['is_disabled'])
         ;
 
-        $encryptEventSubscriber = new Definition(EncryptEventSubscriber::class);
-        $encryptEventSubscriber
+        $encryptEventListener = new Definition(EncryptEventListener::class);
+        $encryptEventListener
             ->setAutowired(true)
-            ->setArgument(1, $config['is_disabled'])
+            ->setArgument('$isDisabled', $config['is_disabled'])
         ;
 
         foreach ($config['connections'] as $connectionName) {
-            $doctrineSubscriber->addTag('doctrine.event_subscriber', [
+            $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'postLoad',
                 'priority' => 500,
                 'connection' => $connectionName,
             ]);
 
-            $encryptEventSubscriber->addTag('kernal.event_subscriber', [
+            $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'postUpdate',
+                'priority' => 500,
+                'connection' => $connectionName,
+            ]);
+
+            $doctrineListener->addTag('doctrine.event_listener', [
+                'event' => 'onFlush',
+                'priority' => 500,
+                'connection' => $connectionName,
+            ]);
+
+            $encryptEventListener->addTag('kernel.event_listener', [
+                'event' => EncryptEvents::ENCRYPT,
+                'method' => 'encrypt',
+                'connection' => $connectionName,
+            ]);
+
+            $encryptEventListener->addTag('kernel.event_listener', [
+                'event' => EncryptEvents::DECRYPT,
+                'method' => 'decrypt',
                 'connection' => $connectionName,
             ]);
         }
 
         $container->addDefinitions([
-            DoctrineEncryptSubscriber::class => $doctrineSubscriber,
-            EncryptEventSubscriber::class => $encryptEventSubscriber
+            DoctrineEncryptListener::class => $doctrineListener,
+            EncryptEventListener::class => $encryptEventListener
         ]);
 
         // Check if Twig is available

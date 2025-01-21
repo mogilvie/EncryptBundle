@@ -12,7 +12,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Command\Command;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
@@ -30,7 +29,6 @@ class EncryptDatabaseCommand extends Command
     private array $encryptedFields = [];
 
     public function __construct(
-        private readonly Reader $annotationReader,
         private readonly EncryptorInterface $encryptor,
         private readonly ManagerRegistry $registry,
         private readonly array $annotationArray
@@ -154,26 +152,12 @@ class EncryptDatabaseCommand extends Command
         return $this->encryptedFields;
     }
 
-    private function isEncryptedProperty(\ReflectionProperty $refProperty)
+    private function isEncryptedProperty(\ReflectionProperty $refProperty): bool
     {
 
         foreach ($refProperty->getAttributes() as $refAttribute) {
 
             if (in_array($refAttribute->getName(), $this->annotationArray)) {
-                return true;
-            }
-        }
-
-        foreach ($this->annotationReader->getPropertyAnnotations($refProperty) as $key => $annotation) {
-
-            if (in_array(get_class($annotation), $this->annotationArray)) {
-                $refProperty->setAccessible(true);
-
-                $this->logger->debug(sprintf('Use of @Encrypted property from SpecShaper/EncryptBundle in property %s is deprectated.
-                    Please use #[Encrypted] attribute instead.',
-                    $refProperty
-                ));
-
                 return true;
             }
         }

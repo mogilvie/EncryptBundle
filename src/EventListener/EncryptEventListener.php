@@ -1,16 +1,18 @@
 <?php
 
-namespace SpecShaper\EncryptBundle\Subscribers;
+namespace SpecShaper\EncryptBundle\EventListener;
 
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Event\EncryptEventInterface;
 use SpecShaper\EncryptBundle\Event\EncryptEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 
 /**
- * Doctrine event subscriber which encrypt/decrypt entities.
+ * Doctrine event listener which encrypts/decrypts entities.
  */
-class EncryptEventSubscriber implements EventSubscriberInterface
+#[AsDoctrineListener(event: EncryptEvents::ENCRYPT)]
+#[AsDoctrineListener(event: EncryptEvents::DECRYPT)]
+class EncryptEventListener
 {
     /**
      * Encryptor created by the factory service.
@@ -23,7 +25,7 @@ class EncryptEventSubscriber implements EventSubscriberInterface
     private bool $isDisabled;
 
     /**
-     * EncryptSubscriber constructor.
+     * EncryptEventListener constructor.
      *
      * @param $isDisabled
      */
@@ -40,20 +42,7 @@ class EncryptEventSubscriber implements EventSubscriberInterface
     {
         return $this->encryptor;
     }
-
-    /**
-     * Realization of EventSubscriber interface method.
-     *
-     * @return array Return all events which this subscriber is listening
-     */
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            EncryptEvents::ENCRYPT => 'encrypt',
-            EncryptEvents::DECRYPT => 'decrypt',
-        ];
-    }
-
+    
     /**
      * Use an Encrypt even to encrypt a value.
      */

@@ -14,12 +14,11 @@
         "MIT"
     ],
     "require" : {
-        "php": ">=7.4|>=8",
-        "symfony/framework-bundle": "^5.4|^6.0|^7.0",
-        "symfony/console": "^5.4|^6.0|^7.0",
-        "doctrine/annotations": "^1.8|^2.0",
-        "doctrine/orm": "^2.11",
-        "doctrine/doctrine-bundle": "^2.5",
+        "php": ">=8.2",
+        "symfony/framework-bundle": "^7.0",
+        "symfony/console": "^7.0",
+        "doctrine/orm": "^3.2",
+        "doctrine/doctrine-bundle": "^2.12",
         "symfony/monolog-bundle": "^3.7",
         "ext-mbstring": "*",
         "ext-openssl": "*",
