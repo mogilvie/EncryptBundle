@@ -291,7 +291,7 @@ You can decrypt/encrypt the entire database using the following
 $ bin/console encrypt:database decrypt connection
 ```
 
-The requried argument should be be decrypt or encrypt.
+The requried argument should be decrypt or encrypt.
 
 There is an option to define the database connection if you employ multiple connections in your application.
 
