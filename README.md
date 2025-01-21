@@ -3,8 +3,8 @@
 A bundle to handle encoding and decoding of parameters using OpenSSL and Doctrine lifecycle events.
 
 Features include:
-- V4 is will be Symfony 7 PHP 8.2
-- V3 is Symfony 5.4|6 PHP 8. I'm moving my projects to symfony 7 so will not maintain after this v3.2.
+- V4 is Symfony 6.4|7.0 PHP 8.2 and beta.
+- V3 is Symfony 5.4|6.0 PHP 8.0. I'm moving my projects to symfony 7 so will not maintain after this v3.2.
 - V2 is Symfony 5 not maintained.
 - v1 is Symfony 3.4 not maintained.
 - Uses OpenSSL
