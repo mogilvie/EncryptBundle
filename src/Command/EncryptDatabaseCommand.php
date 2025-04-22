@@ -143,8 +143,8 @@ class EncryptDatabaseCommand extends Command
                         $this->encryptedFields[$tableName] = [];
                     }
 
-                    $columnName = $classMeta->getColumnName($key);
-                    $this->encryptedFields[$tableName][$columnName] = $refProperty->getName();
+                    $columnName = $classMeta->getColumnName($refProperty->getName());
+                    $this->encryptedFields[$tableName][$refProperty->getName()] = $columnName;
                 }
             }
         }
