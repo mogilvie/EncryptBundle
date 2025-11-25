@@ -7,7 +7,6 @@ use SpecShaper\EncryptBundle\Event\EncryptKeyEvents;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
 use SpecShaper\EncryptBundle\EventListener\DoctrineEncryptListenerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Service\Attribute\Required;
 
 class AesGcmEncryptor implements EncryptorInterface
 {
@@ -48,7 +47,7 @@ class AesGcmEncryptor implements EncryptorInterface
     /**
      * @throws \Exception
      */
-    public function encrypt(?string $data, ?string $columnName): ?string
+    public function encrypt(?string $data, ?string $columnName = null): ?string
     {
         if (is_null($data)) {
             return null;
@@ -84,7 +83,7 @@ class AesGcmEncryptor implements EncryptorInterface
     /**
      * @throws \Exception
      */
-    public function decrypt(?string $data, ?string $columnName): ?string
+    public function decrypt(?string $data, ?string $columnName = null): ?string
     {
         if (is_null($data)) {
             return null;

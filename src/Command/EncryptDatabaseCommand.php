@@ -102,9 +102,9 @@ class EncryptDatabaseCommand extends Command
                 }
 
                 if ('encrypt' === $direction) {
-                    $newValue = $this->encryptor->encrypt($value);
+                    $newValue = $this->encryptor->encrypt($value, $fieldName);
                 } else {
-                    $newValue = $this->encryptor->decrypt($value);
+                    $newValue = $this->encryptor->decrypt($value, $fieldName);
                 }
 
                 $decryptedFields[$fieldName] = $newValue;
