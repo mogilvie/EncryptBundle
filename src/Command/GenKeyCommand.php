@@ -21,7 +21,15 @@ class GenKeyCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $encryption_key_256bit = base64_encode(openssl_random_pseudo_bytes(32));
+        do {
+            $encryption_key_256bit = openssl_random_pseudo_bytes(
+                32,
+                $innerStrong
+            );
+            // $bytes needs to be verified as well
+        } while (!$encryption_key_256bit || !$innerStrong);
+        $encryption_key_256bit = base64_encode($encryption_key_256bit);
+
         $io = new SymfonyStyle($input, $output);
         $io->title('Generated Key');
         $io->success('Key is: ' . $encryption_key_256bit);
