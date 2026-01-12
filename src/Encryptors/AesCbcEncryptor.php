@@ -60,8 +60,15 @@ class AesCbcEncryptor implements EncryptorInterface
         $key = $this->getSecretKey();
 
         // Create a cipher of the appropriate length for this method.
-        $ivsize = openssl_cipher_iv_length(self::METHOD);
-        $iv = openssl_random_pseudo_bytes($ivsize);
+        do {
+            $iv = openssl_random_pseudo_bytes(
+                openssl_cipher_iv_length(
+                    self::METHOD
+                ),
+                $innerStrong
+            );
+            // $bytes needs to be verified as well
+        } while (!$iv || !$innerStrong);
 
         // Create the encryption.
         $ciphertext = openssl_encrypt(

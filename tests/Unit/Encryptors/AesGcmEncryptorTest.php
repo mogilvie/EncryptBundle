@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SpecShaper\EncryptBundle\tests\Unit\Encryptors;
+namespace SpecShaper\EncryptBundle\Tests\Unit\Encryptors;
 
 use SpecShaper\EncryptBundle\Encryptors\AesGcmEncryptor;
 use Symfony\Component\EventDispatcher\EventDispatcher;

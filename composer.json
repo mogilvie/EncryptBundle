@@ -15,17 +15,18 @@
     ],
     "require" : {
         "php": ">=8.2",
-        "symfony/framework-bundle": "^6.4||^7.0",
-        "symfony/console": "^6.4||^7.0",
-        "doctrine/orm": "^2.12||^3.2",
-        "doctrine/doctrine-bundle": "^2.12",
-        "symfony/monolog-bundle": "^3.7",
+        "symfony/framework-bundle": "^6.4||^7.4||^8.0",
+        "symfony/console": "^6.4||^7.4||^8.0",
+        "doctrine/orm": "^2.12||^3.2||^4.0",
+        "doctrine/doctrine-bundle": "^2.12||^3.0",
+        "symfony/monolog-bundle": "^3.7||^4.0",
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "ext-sodium": "*"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^6.0"
+        "symfony/phpunit-bridge": "^6.0",
+        "phpunit/phpunit": "^11.2"
     },
     "autoload": {
         "psr-4": {

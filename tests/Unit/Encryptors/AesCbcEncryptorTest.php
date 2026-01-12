@@ -6,7 +6,7 @@
  * Time: 22:55.
  */
 
-namespace SpecShaper\EncryptBundle\tests\Unit\Encryptors;
+namespace SpecShaper\EncryptBundle\Tests\Unit\Encryptors;
 
 use SpecShaper\EncryptBundle\Encryptors\AesCbcEncryptor;
 use Symfony\Component\EventDispatcher\EventDispatcher;

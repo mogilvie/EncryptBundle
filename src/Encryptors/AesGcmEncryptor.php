@@ -58,8 +58,15 @@ class AesGcmEncryptor implements EncryptorInterface
         }
 
         $key = $this->getSecretKey();
-        $ivsize = openssl_cipher_iv_length(self::METHOD);
-        $iv = openssl_random_pseudo_bytes($ivsize);
+        do {
+            $iv = openssl_random_pseudo_bytes(
+                openssl_cipher_iv_length(
+                    self::METHOD
+                ),
+                $innerStrong
+            );
+            // $bytes needs to be verified as well
+        } while (!$iv || !$innerStrong);
         $tag = '';
         $associatedData = $columnName ?? $this->defaultAssociatedData;
 
@@ -70,7 +77,7 @@ class AesGcmEncryptor implements EncryptorInterface
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            $associatedData
+            $associatedData ?? ''
         );
 
         if ($ciphertext === false) {
@@ -112,7 +119,7 @@ class AesGcmEncryptor implements EncryptorInterface
             OPENSSL_RAW_DATA,
             $iv,
             $tag,
-            $columnName
+            $columnName ?? $this->defaultAssociatedData ?? ''
         );
 
         if ($plaintext === false) {
