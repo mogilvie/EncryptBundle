@@ -16,6 +16,7 @@ interface DoctrineEncryptListenerInterface
 
     public function __construct(
         EncryptorInterface $encryptor,
+        #[\Deprecated]
         EntityManagerInterface $em,
         array $annotationArray,
         bool $isDisabled
