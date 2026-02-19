@@ -13,10 +13,12 @@ use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 interface DoctrineEncryptListenerInterface
 {
     public const ENCRYPTED_SUFFIX = '<ENC>';
-
+    
+    /**
+     * @param EntityManagerInterface $em Deprecated in favour of getting object manager from event args.
+     */
     public function __construct(
         EncryptorInterface $encryptor,
-        #[\Deprecated]
         EntityManagerInterface $em,
         array $annotationArray,
         bool $isDisabled
