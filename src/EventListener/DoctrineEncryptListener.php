@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Persistence\ObjectManager;
 use ReflectionProperty;
 use SpecShaper\EncryptBundle\Encryptors\EncryptorInterface;
 use SpecShaper\EncryptBundle\Exception\EncryptException;
@@ -40,6 +41,9 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
 
     private bool $isDisabled;
 
+    /**
+     * @param EntityManagerInterface $em Deprecated in favour of fetching object manager from event args.
+     */
     public function __construct(
         private readonly EncryptorInterface $encryptor,
         private readonly EntityManagerInterface $em,
@@ -77,14 +81,15 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
             return;
         }
 
-        $unitOfWork = $this->em->getUnitOfWork();
+        $objectManager = $args->getObjectManager();
+        $unitOfWork = $objectManager->getUnitOfWork();
 
         foreach ($unitOfWork->getScheduledEntityInsertions() as $entity) {
-            $this->processFields($entity, true, true);
+            $this->processFields($objectManager, $entity, true, true);
         }
 
         foreach ($unitOfWork->getScheduledEntityUpdates() as $entity) {
-            $this->processFields($entity, true, false);
+            $this->processFields($objectManager, $entity, true, false);
         }
     }
 
@@ -99,7 +104,7 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
         $entity = $args->getObject();
 
         // Decrypt the entity fields.
-        $this->processFields($entity, false, false);
+        $this->processFields($args->getObjectManager(), $entity, false, false);
     }
 
     /**
@@ -130,19 +135,19 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
     /**
      * Process (encrypt/decrypt) entities fields.
      */
-    protected function processFields(object $entity, bool $isEncryptOperation, bool $isInsert): bool
+    protected function processFields(ObjectManager $objectManager,object $entity, bool $isEncryptOperation, bool $isInsert): bool
     {
         // Get the encrypted properties in the entity.
-        $properties = $this->getEncryptedFields($entity);
+        $properties = $this->getEncryptedFields($objectManager, $entity);
 
         // If no encrypted properties, return false.
         if (empty($properties)) {
             return false;
         }
 
-        $unitOfWork = $this->em->getUnitOfWork();
+        $unitOfWork = $objectManager->getUnitOfWork();
         $oid = spl_object_id($entity);
-        $meta = $this->em->getClassMetadata(get_class($entity));
+        $meta = $objectManager->getClassMetadata(get_class($entity));
 
         foreach ($properties as $refProperty) {
 
@@ -201,9 +206,11 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
         $entity = $args->getObject();
         $oid = spl_object_id($entity);
 
+        $objectManager = $args->getObjectManager();
+
         if (isset($this->rawValues[$oid])) {
             $className = get_class($entity);
-            $meta = $this->em->getClassMetadata($className);
+            $meta = $objectManager->getClassMetadata($className);
             foreach ($this->rawValues[$oid] as $prop => $rawValue) {
                 $refProperty = $meta->getReflectionProperty($prop);
                 $refProperty->setValue($entity, $rawValue);
@@ -216,9 +223,9 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
     /**
      * @return array<string, ReflectionProperty>
      */
-    protected function getEncryptedFields(object $entity): array
+    protected function getEncryptedFields(ObjectManager $objectManager, object $entity): array
     {
-        $reflectionClass = $this->getOriginalEntityReflection($entity);
+        $reflectionClass = $this->getOriginalEntityReflection($objectManager, $entity);
 
         $className = $reflectionClass->getName();
 
@@ -257,9 +264,9 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
         return false;
     }
 
-    protected function getOriginalEntityReflection($entity): \ReflectionClass
+    protected function getOriginalEntityReflection(ObjectManager $objectManager, $entity): \ReflectionClass
     {
-        $realClassName = $this->em->getClassMetadata(get_class($entity))->getName();
+        $realClassName = $objectManager->getClassMetadata(get_class($entity))->getName();
         return new \ReflectionClass($realClassName);
     }
 }
