@@ -41,9 +41,11 @@ class DoctrineEncryptListener implements DoctrineEncryptListenerInterface
 
     private bool $isDisabled;
 
+    /**
+     * @param EntityManagerInterface $em Deprecated in favour of fetching object manager from event args.
+     */
     public function __construct(
         private readonly EncryptorInterface $encryptor,
-        #[\Deprecated]
         private readonly EntityManagerInterface $em,
         array $annotationArray,
         bool $isDisabled
